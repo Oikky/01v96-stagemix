@@ -1,0 +1,73 @@
+01V96 StageMix
+==============
+A página do StageMix (a mesma do REAPER) controlando a Yamaha 01V96 pelo celular/tablet.
+O PC fica ligado na mesa pelo USB; o celular/tablet abre a página pelo Wi-Fi.
+
+  celular/tablet --Wi-Fi--> PC (INICIAR.bat) --USB--> 01V96
+
+Tudo fica nesta pasta (inclusive um Python portátil e o driver). Dá pra copiar pra outro PC.
+
+
+CHECKLIST PRA AMANHÃ
+--------------------
+1. Driver: neste PC já está instalado (Yamaha USB-MIDI Driver 3.1.5).
+   Em outro PC: drivers\YamahaUSBMIDI\um3151\setup.exe ANTES de ligar o cabo.
+
+2. Na 01V96:
+   - DIO/SETUP  -> aba MIDI/HOST: em GENERAL, porta = USB; Rx PORT = 1 e Tx PORT = 1
+   - MIDI       -> aba SETUP: Tx CHANNEL = 1 e Rx CHANNEL = 1
+                  linha PARAMETER CHANGE: Tx = ON e Rx = ON
+                  (Program Change Tx ON também, pra página saber quando troca de cena)
+                  Fader Resolution = HIGH  (se ficar LOW, abra com: INICIAR.bat --fader-low)
+
+3. Ligue o cabo USB (mesa ligada) e abra INICIAR.bat.
+   - A janela mostra as portas MIDI e "Mesa: entrada ... / saída ...".
+   - Na primeira vez o Windows pergunta sobre o firewall: marque "Redes privadas" e permita.
+   - Feche o Studio Manager / 01V96 Editor se estiver aberto (os dois disputam a porta).
+
+4. No celular/tablet (mesmo Wi-Fi do PC), abra o endereço que aparece na janela,
+   ex.: http://192.168.100.12:8096
+
+5. Se der problema:
+   - "NÃO ACHEI A 01V96": rode LISTAR PORTAS MIDI.bat e depois INICIAR.bat --midi NUMERO
+   - Página ONLINE mas nada mexe: confira o passo 2 (Parameter Change Tx/Rx ON, canal 1).
+   - Fader da página vai pro lugar errado (ex.: 0 dB na página = bem baixo na mesa):
+     confira Fader Resolution = HIGH, ou rode INICIAR.bat --fader-low
+   - Medidores/GR estranhos: abra http://IP:8096/diag e mande print (mostra os valores crus da mesa).
+   - Tudo fica gravado em servidor.log.
+
+
+O QUE FUNCIONA
+--------------
+- HOME: 32 canais com fader, ON, CUE (solo), pan, medidor e nome vindo da mesa
+- Stereo (master) com fader, ON e balanço
+- AUX 1-8 como destinos de envio (SENDS ON FADER, botões do lado direito, tela SEND TO)
+  e o master de cada AUX (EDIT / FX)
+- INPUT: fase e pan
+- EQ: os 4 bandas da mesa (L, LM, HM, H), arrastar as bolinhas, Q, shelving/HPF/LPF
+- GATE e COMP da própria mesa (threshold, range/ratio, attack, hold, release, ganho, knee),
+  com GR vindo da mesa
+- Troca de cena na mesa: a página relê tudo sozinha; o nome da cena aparece embaixo (SCENE)
+
+O QUE NÃO TEM (limite da 01V96)
+-------------------------------
+- RTA: a 01V96 não manda áudio pro PC
+- Ganho analógico (knob GAIN) e phantom: são físicos, não dá pra controlar por MIDI
+- Efeitos internos (REV/DELAY da mesa): ainda não aparecem na página
+
+
+TESTAR SEM A MESA
+-----------------
+INICIAR (simulador sem mesa).bat -> abre uma 01V96 de mentira com nomes de canais de exemplo.
+
+
+ARQUIVOS
+--------
+servidor.py          ponte (web + tradução pra SysEx da 01V96) e simulador
+yamaha01v96.py       mapa de parâmetros da 01V96 (da planilha oficial da Yamaha)
+midi_win.py          acesso MIDI do Windows
+stagemix.html        a página (cópia da versão REAPER com ajustes pra 01V96)
+tabelas_01v96.json   tabelas de valores (fader, Q, frequência, ratio, tempos)
+referencia\          planilha oficial "01V96 V2 Parameter Change List"
+drivers\             driver Yamaha USB-MIDI
+python\              Python portátil (não precisa instalar)

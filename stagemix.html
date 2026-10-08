@@ -1,0 +1,1916 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<title>StageMix 01V96</title>
+<link rel="icon" href="data:,">
+<style>
+  /* Medidas tiradas das telas reais do TF StageMix (iPad 1280×960) × 0,8 para 1024×768. */
+  :root {
+    color-scheme: dark;
+    --font: "DIN Alternate", "Bahnschrift", "DIN Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+    --m-g: #5ec42a; --m-y: #f2b130; --m-r: #e8352e;
+    --cap: 20px;
+    --strip: 94.5px;
+    --plate-hi: #e8e8e8; --plate-lo: #cfcfcf; --ink: #121212;
+    --lit-hi: #e4e4e4; --lit-lo: #c9c7c8;
+    --cue-hi: #ffc34f; --cue-lo: #f08c00;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #000; color: #e8e8e8; font: 14px/1.2 var(--font); }
+  body { height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; -webkit-user-select: none; user-select: none;
+    touch-action: manipulation; overscroll-behavior: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px); }
+  button { font: inherit; color: inherit; border: 0; padding: 0; background: none; cursor: pointer; }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+  ::selection { background: rgba(255, 255, 255, .25); }
+  svg { display: block; }
+  .hidden { display: none !important; }
+
+  /* ===== METER area ===== */
+  .mb { flex: none; height: 96px; display: flex; padding: 4px 8px 4px 10px; }
+  .cn { flex: none; width: 96px; display: flex; flex-direction: column; }
+  .cn .lbl { font-size: 12px; color: #d6d6d6; letter-spacing: .05em; display: flex; align-items: center; justify-content: center; gap: 5px; height: 16px; }
+  .cn .lbl::before, .cn .lbl::after { content: ""; width: 9px; height: 1px; background: #8c8c8c; }
+  .online { margin-top: 3px; height: 35px; border-radius: 5px; font-size: 19px; font-weight: 700; letter-spacing: .02em; color: #e6e6e6;
+    background: linear-gradient(#5c5c5c, #4c4c4c); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16); }
+  .online.ok { color: #6cbe2d; background: linear-gradient(#e4e6e1, #b9bdb6); box-shadow: inset 0 1px 0 #fff; }
+  .online.warn { color: #d98a10; background: linear-gradient(#e4e6e1, #b9bdb6); }
+  .cnsub { flex: 1; margin-top: 2px; background: #161616; border-radius: 0 0 5px 5px; font-size: 12px; color: #cfcfcf; padding: 9px 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cnsub.warn { color: #f2b24a; }
+  .sqc { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 2px 0 0 9px; }
+  .sq { width: 59px; flex: 1; border-radius: 5px; font-size: 12px; letter-spacing: .03em; color: #dadada; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; position: relative;
+    background: linear-gradient(#5a5a5a, #4a4a4a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14); }
+  .sq svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .sq.on { background: linear-gradient(var(--cue-hi), var(--cue-lo)); color: #141414; }
+  .sq .ring { position: absolute; inset: 0; border-radius: 5px; box-shadow: inset 0 0 0 3px #fff; opacity: 0; clip-path: inset(100% 0 0 0); }
+  .sq.arming .ring { opacity: 1; clip-path: inset(0 0 0 0); transition: clip-path 700ms linear; }
+  .vsep { flex: none; width: 1px; background: #4c4c4c; margin: 2px 8px 2px 10px; }
+  .blocks { flex: 1; min-width: 0; display: flex; gap: 3px; position: relative; }
+  .blk { flex: 0 1 74px; min-width: 0; background: #212121; border-radius: 6px; display: flex; flex-direction: column; padding: 6px 4px 0; }
+  .blk .bars { flex: 1; display: flex; gap: 3px; justify-content: center; }
+  .blk i { flex: 0 1 5px; min-width: 2px; position: relative; margin-top: 7px;
+    background: linear-gradient(to top, var(--m-g) 0%, var(--m-g) calc(var(--gy) * 100%), var(--m-y) calc(var(--gy) * 100%), var(--m-y) calc(var(--gr) * 100%), var(--m-r) calc(var(--gr) * 100%)); }
+  .blk i::before { content: ""; position: absolute; top: -7px; left: 0; right: 0; height: 5px; border-radius: 50%; background: #333; }
+  .blk i b { position: absolute; inset: 0; background: #333; transform-origin: top; transform: scaleY(calc(1 - var(--l, 0))); transition: transform 30ms linear; }
+  .blk i u { position: absolute; left: -2px; right: -2px; height: 2px; background: #fff; bottom: calc(var(--f, 0) * 100% - 1px); }
+  .blk i u.z { height: 3px; }
+  .blk i.snd u { background: var(--sc, #fff); }
+  .blk i.off { filter: grayscale(1) brightness(.7); }
+  .blk .bl { flex: none; height: 20px; font-size: 12px; color: #e2e2e2; text-align: center; padding-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hl { position: absolute; top: 0; bottom: 0; border: 2px solid #e8e8e8; border-radius: 7px; pointer-events: none; transition: left 160ms ease-out, width 160ms ease-out; }
+
+  /* ===== corpo ===== */
+  .body { flex: 1; min-height: 0; display: flex; position: relative; padding: 16px 8px 7px 10px; }
+  .view { flex: 1; min-width: 0; display: flex; }
+
+  /* HOME: canais + coluna SEND + Stereo */
+  .home { justify-content: space-between; gap: 8px; }
+  .details { flex: 0 1 auto; min-width: 0; display: flex; gap: 2px; background: #000; border-radius: 13px; overflow: hidden; touch-action: none; }
+  .overview { flex: none; display: flex; gap: 2px; border-radius: 13px; overflow: hidden; background: #000; }
+  .ostrip { display: flex; }
+  .ostrip .st { height: 100%; }
+  .st { width: var(--strip); flex: none; display: flex; flex-direction: column; position: relative; background: linear-gradient(#343434, #232122 40%, #181415); }
+  .st.sel::after { content: ""; position: absolute; inset: 0; border: 2px solid #b6b6b6; border-radius: inherit; pointer-events: none; z-index: 2; }
+  .details .st:first-child.sel::after { border-radius: 13px 0 0 13px; }
+  .st.dis .fz { opacity: .28; pointer-events: none; }
+
+  .proc { flex: none; height: 104px; position: relative; background: linear-gradient(#3b393a, #333132); border-bottom: 2px solid #0f0d0e; }
+  .proc.blank { background: linear-gradient(#2a2a2a, #232323); }
+  .knob { position: absolute; left: 13px; top: 6px; width: 50px; height: 50px; touch-action: none; cursor: ns-resize; }
+  .knob svg { width: 50px; height: 50px; }
+  .knob .kt { fill: none; stroke: #4a4a4a; stroke-width: 8; }
+  .knob .kv { fill: none; stroke: #f0f0f0; stroke-width: 8; stroke-dasharray: 0 100; }
+  .knob .kc { fill: #3a3a3a; }
+  .knob span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; color: #f2f2f2; font-variant-numeric: tabular-nums; }
+  .knob.none .kv { stroke: none; }
+  .knob.none span { color: #727272; }
+  .knob.smute .kv { stroke: #8a8a8a; }
+  .pmt { position: absolute; left: 79px; top: 13px; width: 5px; height: 40px;
+    background: linear-gradient(to top, var(--m-g) 0%, var(--m-g) 60%, var(--m-y) 60%, var(--m-y) 85%, var(--m-r) 85%); }
+  .pmt::before { content: ""; position: absolute; top: -7px; left: 0; right: 0; height: 5px; border-radius: 50%; background: #0a0a0a; }
+  .pmt b { position: absolute; inset: 0; background: #0a0a0a; transform-origin: top; transform: scaleY(calc(1 - var(--l, 0))); transition: transform 30ms linear; }
+  .chips { position: absolute; left: 0; right: 0; top: 63px; display: flex; justify-content: center; gap: 4px; }
+  .chip { height: 18px; padding: 0 7px; border-radius: 9px; background: #4b4b4b; color: #a2a2a2; font-size: 12px; max-width: 54px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip.ph { width: 25px; padding: 0; font-weight: 700; }
+  .chip.lit { background: #d4d4d4; color: #1b1b1b; }
+  .dots { position: absolute; left: 0; right: 0; top: 91px; display: flex; justify-content: center; gap: 7px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: #8e8e8e; }
+  .dots i.cur { background: #fff; }
+
+  .fz { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; padding-top: 17px; }
+  .oc { flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .on, .cue { width: 66px; height: 37px; border-radius: 19px; font-size: 21px; font-weight: 700; letter-spacing: .01em; }
+  .on { background: linear-gradient(#404040, #333); color: #8b8b8b; box-shadow: inset 0 1px 0 rgba(255,255,255,.07); }
+  .on.lit { background: linear-gradient(var(--lit-hi), var(--lit-lo)); color: #141414; box-shadow: inset 0 1px 0 #fff; }
+  .cue { background: linear-gradient(#585858, #4a4a4a); color: #d9d9d9; box-shadow: inset 0 1px 0 rgba(255,255,255,.1); }
+  .cue.lit { background: linear-gradient(var(--cue-hi), var(--cue-lo)); color: #141414; }
+  .cue.ghost { visibility: hidden; }
+  .cue.pre { background: linear-gradient(#e4e4e4, #c9c7c8); color: #141414; opacity: .55; cursor: default; }
+  .fd { flex: 1; min-height: 60px; width: 100%; position: relative; margin-top: 16px; touch-action: none; cursor: ns-resize; }
+  .fd .slot { position: absolute; left: 50%; width: 13px; margin-left: -5px; top: calc(var(--cap) / 2); bottom: calc(var(--cap) / 2); border-radius: 7px;
+    background: linear-gradient(90deg, #0d0b0c, #151314 50%, #0d0b0c); box-shadow: inset 0 0 0 1px #1d1b1c; }
+  .fd .slot i { position: absolute; left: 3px; right: 3px; bottom: 0; height: calc(var(--p, 0) * 100%); border-radius: 4px; background: var(--sc, transparent); opacity: .85; }
+  .fd .mt { position: absolute; left: calc(50% - 22px); width: 6px; bottom: calc(var(--cap) / 2); height: calc((100% - var(--cap)) * 0.807);
+    background: linear-gradient(to top, var(--m-g) 0%, var(--m-g) calc(var(--gy2) * 100%), var(--m-y) calc(var(--gy2) * 100%), var(--m-y) calc(var(--gr2) * 100%), var(--m-r) calc(var(--gr2) * 100%)); }
+  .fd .mt::before { content: ""; position: absolute; top: -8px; left: 0; width: 6px; height: 6px; border-radius: 50%; background: #050505; }
+  .fd .mt.clip::before { background: var(--m-r); }
+  .fd .mt b { position: absolute; inset: 0; background: #020202; transform-origin: top; transform: scaleY(calc(1 - var(--l, 0))); transition: transform 30ms linear; }
+  .fd .mt i { position: absolute; left: 0; right: 0; height: 2px; bottom: calc(var(--h, 0) * 100%); background: #ddd; opacity: .8; }
+  .fd.off .mt { filter: grayscale(1) brightness(.7); }
+  .fd .cap { position: absolute; left: calc(50% - 19px); width: 40px; height: var(--cap); top: calc((1 - var(--p, 0)) * (100% - var(--cap))); border-radius: 3px;
+    background: linear-gradient(#cfd0d2, #a9abae 35%, #505153 50%, #3d3d3e 52%, #6a6b6d 85%, #8f9093); box-shadow: 0 0 0 1px #8d8d8d, 0 3px 4px rgba(0,0,0,.7); }
+  .fd .cap::after { content: ""; position: absolute; left: 13px; right: 13px; top: 50%; height: 0; border-top: 2px solid #c8c8c8; margin-top: 1px; }
+  .fd.snd .cap { background: linear-gradient(#e7b38c, #b9774a 35%, #6d3c1d 50%, #5a2f15 52%, #8a4e27 85%, #a8673a); box-shadow: 0 0 0 1px #9b6a45, 0 3px 4px rgba(0,0,0,.7); }
+  .st.master .fd .cap { background: linear-gradient(#f0a3a6, #d65a61 35%, #8f1d23 50%, #7a141a 52%, #b2363d 85%, #cf5a60); box-shadow: 0 0 0 1px #e05058, 0 3px 4px rgba(0,0,0,.7); }
+  .fd.drag .cap { filter: brightness(1.1); }
+  .fd .sc { position: absolute; left: calc(50% + 16px); top: calc(var(--cap) / 2); bottom: calc(var(--cap) / 2); width: 30px; font-size: 10px; color: #8b8b8b; font-variant-numeric: tabular-nums; }
+  .fd .sc span { position: absolute; left: 0; transform: translateY(50%); line-height: 1; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .fd .sc span::before { content: ""; width: 6px; height: 2px; background: #8b8b8b; }
+  .fd .sc span.inf::before { visibility: hidden; }
+  .val { flex: none; margin-top: 6px; height: 22px; min-width: 60px; padding: 0 4px; font-size: 16px; color: #f4f4f4; font-variant-numeric: tabular-nums; border-radius: 3px; }
+  .val.sel, .val:active { background: #3b3b3b; }
+
+  .nm { flex: none; height: 86px; position: relative; overflow: hidden; color: var(--ink); background: linear-gradient(var(--plate-hi), #dcdcdc 55%, var(--plate-lo)); border-top: 2px solid #000; }
+  .pan { position: absolute; left: 6px; right: 6px; top: 3px; height: 24px; touch-action: none; cursor: ew-resize; }
+  .pan .pl { position: absolute; top: 0; left: 0; right: 0; text-align: center; font-size: 11px; color: #1d1d1d; line-height: 1; }
+  .pan .pl.side { color: #c0600a; }
+  .pan svg { position: absolute; left: 4px; right: 4px; bottom: 0; width: calc(100% - 8px); height: 13px; }
+  .pan .w { fill: #b9b9b9; }
+  .pan .wf { fill: #f08a24; }
+  .pan .d { fill: #2f8a05; }
+  .nl { position: absolute; left: 0; right: 0; top: 28px; bottom: 8px; cursor: pointer; }
+  .nl .cnum { position: absolute; left: 5px; top: 11px; font-size: 15px; color: #1d1d1d; }
+  .nl .nn { position: absolute; left: 2px; right: 2px; bottom: 3px; text-align: center; font-size: 19px; font-weight: 700; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 1; }
+  .nl .nn.s1 { font-size: 16px; }
+  .nl .nn.s2 { font-size: 13.5px; }
+  .nl .ico { position: absolute; right: 7px; top: 1px; width: 24px; height: 34px; }
+  .nm .cb { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--tc, #6d6f72); }
+  .st.master .nm .cb { background: #b00004; }
+
+  .dl { width: 52px; background: #333132; display: flex; flex-direction: column; padding: 10px 0 8px; }
+  .dl .hd { font-size: 10px; letter-spacing: .06em; color: #8b8b8b; text-align: right; padding: 0 6px 6px; }
+  .dl button { height: 25px; font-size: 12px; color: #d4d4d4; text-align: right; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dl button.sel { background: var(--tc); color: var(--ti); }
+  .dl .exit { margin: auto 4px 0; height: 26px; border: 1px solid #575757; text-align: center; color: #c8c8c8; background: #2a2829; }
+
+  /* ===== painel lateral (voltar + canal) das telas de canal/efeito ===== */
+  .rp { flex: none; width: 94px; display: flex; flex-direction: column; border-radius: 13px; overflow: hidden; background: linear-gradient(#2c2c2c, #222 30%, #1b1b1b); }
+  .rp .back { flex: none; height: 102px; display: grid; place-items: center; border-bottom: 2px solid #0e0e0e; background: linear-gradient(#333, #2a2a2a); }
+  .rp .back svg { width: 34px; height: 30px; fill: none; stroke: #f2f2f2; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .rp .st { width: 100%; flex: 1; background: none; }
+
+  /* ===== telas de canal ===== */
+  .cv { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 64px minmax(0, 1fr); column-gap: 12px; }
+  .cv > .rp { grid-column: 2; grid-row: 1 / span 2; }
+  .cv > .ch-h { grid-column: 1; grid-row: 1; display: flex; align-items: center; gap: 18px; padding-left: 20px; min-width: 0; }
+  .cv > .ch-b { grid-column: 1; grid-row: 2; min-height: 0; display: flex; position: relative; }
+  .tpill { height: 57px; min-width: 126px; padding: 0 22px; border-radius: 29px; position: relative; overflow: hidden; font-size: 31px; font-weight: 700; color: #dadada; letter-spacing: .02em;
+    background: linear-gradient(#545454, #3a3a3a); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; flex: none; }
+  .tpill.lit { background: linear-gradient(#58a63a, #2f7716); color: #f2f2f2; }
+  .tpill .wm { position: absolute; left: 8px; top: 8px; width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 3; opacity: .35; }
+  .tpill span { position: relative; }
+  .kbar { flex: 1; min-width: 0; height: 57px; border-radius: 29px; background: #262626; display: flex; align-items: center; padding: 0 8px; gap: 10px; }
+  .kbar .kp { height: 45px; padding: 0 16px 0 8px; border-radius: 23px; background: #474747; display: flex; align-items: center; gap: 8px; font-size: 23px; font-weight: 700; color: #ececec; white-space: nowrap; overflow: hidden; }
+  .kbar .kp i { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ececec; display: grid; place-items: center; font-style: normal; font-size: 19px; font-weight: 400; flex: none; }
+  .kbar .ks { margin-left: auto; height: 45px; min-width: 134px; border-radius: 23px; background: #474747; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 16px; }
+  .kbar .ks svg { width: 44px; height: 24px; fill: none; stroke: #f2f2f2; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .kbar .ks b { width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 10px solid #e6e6e6; }
+
+  /* medidores das telas de canal: escala 3/6/12/20/30/60 igual à do StageMix (posições medidas nas fotos) */
+  .mcol { flex: none; display: flex; flex-direction: column; align-items: center; min-height: 0; }
+  .mcol .ml { font-size: 30px; color: #b4b4b4; line-height: 1; display: flex; gap: 16px; }
+  .mcol .mo { font-size: 17px; color: #9a9a9a; margin-top: 6px; min-height: 1.2em; }
+  .vm { position: relative; width: 62px; flex: 1; margin-top: 12px; max-height: 330px; --bx: 14px; }
+  .vm .bar { position: absolute; left: var(--bx); top: 19px; bottom: 0; width: 10px; border-radius: 5px; overflow: hidden;
+    background: linear-gradient(to top, var(--m-g) 0%, var(--m-g) var(--vy), var(--m-y) var(--vy), var(--m-y) var(--vr), var(--m-r) var(--vr)); }
+  .vm .bar b { position: absolute; inset: 0; background: #333; transform-origin: top; transform: scaleY(calc(1 - var(--l, 0))); }
+  .vm::before { content: ""; position: absolute; left: calc(var(--bx) - .5px); top: 0; width: 11px; height: 11px; border-radius: 50%; background: #3a3a3a; }
+  .vm.clip::before { background: var(--m-r); }
+  .vm .vs2 { position: absolute; left: calc(var(--bx) + 19px); top: 19px; bottom: 0; font-size: 16px; color: #9a9a9a; }
+  .vm .vs2 span { position: absolute; transform: translateY(-50%); }
+  .vm.gr::before { display: none; }
+  .vm.gr .bar { top: 0; background: #333; }
+  .vm.gr .bar i { position: absolute; left: 0; right: 0; top: 19px; height: calc(var(--g, 0) * (100% - 19px)); background: linear-gradient(#f6c25a, #e8902a); }
+  .vm.thr { width: 74px; --bx: 30px; }
+  .vm .thm { position: absolute; left: 3px; top: calc(19px + (1 - var(--t, 0)) * (100% - 19px)); margin-top: -8px; width: 0; height: 0;
+    border-left: 13px solid #f2f2f2; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+  .vm .thm.none { display: none; }
+  .mpair { flex: 1; min-height: 0; display: flex; gap: 2px; }
+  .mpair .mcol { flex: none; }
+  .mpair .vm { width: 46px; }
+  .mpair .vm.gr { width: 58px; }
+  .outm { width: 76px; padding-top: 6px; }
+  .pkv { flex: none; margin-top: 8px; min-width: 56px; height: 26px; padding: 0 6px; border-radius: 6px; background: #1b1b1b; border: 1px solid #3c3c3c;
+    color: #f2f2f2; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pkv.over { background: #b8262d; border-color: #e8352e; color: #fff; }
+  .rtah { flex: none; width: 66px; height: 35px; margin-bottom: 10px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: .95;
+    color: #f2f2f2; background: linear-gradient(#5c5c5c, #4a4a4a); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); }
+  .rtah small { font-size: 10px; letter-spacing: .04em; }
+  .rtah b { font-size: 18px; letter-spacing: .02em; }
+  .rtah.lit { background: linear-gradient(var(--lit-hi), var(--lit-lo)); color: #141414; box-shadow: inset 0 1px 0 #fff; }
+  .rtah:disabled { color: #8a8a8a; background: linear-gradient(#444, #3a3a3a); cursor: default; }
+
+  /* EQ */
+  .eqw { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .chg { position: relative; flex: 1; min-height: 120px; margin-top: 26px; }
+  .chg svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; overflow: visible; }
+  .chg .gl { stroke: #4a4a4a; stroke-width: 1; stroke-dasharray: 2 3; }
+  .chg .gls { stroke: #6a6a6a; stroke-width: 1; }
+  .chg text { fill: #d2d2d2; font-family: var(--font); }
+  .chg .ylab { font-size: 20px; text-anchor: end; dominant-baseline: central; }
+  .chg .ylab.z { font-size: 27px; font-weight: 700; fill: #f2f2f2; }
+  .chg .xlab { font-size: 20px; text-anchor: middle; }
+  .chg .cv { fill: none; stroke: #4fc12a; stroke-width: 4; stroke-linejoin: round; }
+  .chg .cvf { fill: rgba(79, 193, 42, .1); }
+  .chg .rta { fill: #4d4d4d; }
+  .chg .rtapk { fill: #e8352e; }
+  .eqw.eqoff .cv { stroke: #6c8f60; }
+  .eqpop:empty { display: none; }
+  .eqnote { position: absolute; left: 52px; top: 4px; right: 8px; font-size: 14px; color: #9a9a9a; pointer-events: none; }
+  .eqh { cursor: move; }
+  .eqh circle { fill: url(#hg); stroke: #222; stroke-width: 1; }
+  .eqh text { fill: #e6e6e6; font-size: 17px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .eqh.sel circle { fill: url(#hgs); r: 21px; }
+  .eqh.sel text { fill: #555; font-size: 24px; }
+  .eqpop { position: absolute; z-index: 3; border: 2px solid #1517f0; background: rgba(0, 0, 0, .55); padding: 6px 12px 6px 14px; min-width: 190px; }
+  .eqpop .er { display: flex; align-items: center; gap: 8px; height: 35px; font-size: 18px; color: #f0f0f0; touch-action: none; cursor: ns-resize; }
+  .eqpop .er span { width: 48px; text-align: right; }
+  .eqpop .er b { font-weight: 400; min-width: 86px; font-variant-numeric: tabular-nums; }
+  .eqpop .er.drag b { color: #ffe08a; }
+
+  /* GATE / COMP */
+  .dynw { flex: 1; min-width: 0; display: grid; grid-template-columns: 76px minmax(0, 1fr) 112px; gap: 0 10px; padding-top: 50px; }
+  .dynbox { position: relative; border: 3px solid #3c3c3c; border-radius: 12px; display: grid; grid-template-columns: 70px minmax(150px, 1fr) 70px minmax(180px, 1.15fr); gap: 0 14px; padding: 10px 16px 14px 12px; min-height: 0; }
+  .vcol { display: flex; flex-direction: column; align-items: center; min-height: 0; touch-action: none; cursor: ns-resize; }
+  .vcol .vl { font-size: 21px; color: #d6d6d6; font-weight: 700; }
+  .vcol .vv { font-size: 21px; color: #f2f2f2; font-weight: 700; margin-top: 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .vsl { position: relative; flex: 1; width: 44px; margin-top: 18px; min-height: 80px; }
+  .vsl::before { content: ""; position: absolute; left: 50%; margin-left: -12px; width: 24px; top: 0; bottom: 0; border-radius: 12px; background: #3a3a3a; }
+  .vsl i { position: absolute; left: 50%; margin-left: -12px; width: 24px; bottom: 0; height: calc(var(--p, 0) * (100% - 40px) + 20px); border-radius: 12px; background: linear-gradient(90deg, #9a9a9a, #e8e8e8 50%, #a5a5a5); }
+  .vsl u { position: absolute; left: 50%; margin-left: -20px; width: 40px; height: 40px; border-radius: 50%; top: calc((1 - var(--p, 0)) * (100% - 40px));
+    background: radial-gradient(circle at 50% 50%, #3a3a3a 0 3px, #f2f2f2 4px, #d8d8d8 70%, #b5b5b5); box-shadow: 0 2px 4px rgba(0,0,0,.6); }
+  .vcol.drag .vv { color: #ffe08a; }
+  .dyng { position: relative; min-height: 0; align-self: center; width: 100%; max-width: 280px; aspect-ratio: 1; justify-self: center; margin-top: 30px; }
+  .dyng svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .dyng .ax { stroke: #e2e2e2; stroke-width: 1.5; fill: none; }
+  .dyng .gl { stroke: #555; stroke-width: 1; stroke-dasharray: 2 3; }
+  .dyng .gls { stroke: #9a9a9a; stroke-width: 1; }
+  .dyng text { fill: #d2d2d2; font-family: var(--font); }
+  .dyng .fill { fill: rgba(170, 200, 160, .25); }
+  .dyng .ln { fill: none; stroke: #d6f0c8; stroke-width: 2.5; }
+  .dyng .dot { fill: #fff; }
+  .hcol { display: flex; flex-direction: column; justify-content: center; gap: 22px; padding-top: 16px; min-width: 0; }
+  .hsl { touch-action: none; cursor: ew-resize; }
+  .hsl .hl2 { display: flex; justify-content: space-between; align-items: baseline; font-size: 22px; color: #d2d2d2; font-weight: 700; padding: 0 2px 8px; gap: 8px; }
+  .hsl .hl2 b { color: #f2f2f2; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hsl .tr2 { position: relative; height: 40px; }
+  .hsl .tr2::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 22px; margin-top: -11px; border-radius: 11px; background: #3a3a3a; }
+  .hsl .tr2 i { position: absolute; left: 0; top: 50%; height: 22px; margin-top: -11px; border-radius: 11px; width: calc(var(--p, 0) * (100% - 40px) + 20px); background: linear-gradient(#e8e8e8, #a5a5a5); }
+  .hsl .tr2 u { position: absolute; top: 0; width: 40px; height: 40px; border-radius: 50%; left: calc(var(--p, 0) * (100% - 40px));
+    background: radial-gradient(circle at 50% 50%, #3a3a3a 0 3px, #f2f2f2 4px, #d8d8d8 70%, #b5b5b5); box-shadow: 0 2px 4px rgba(0,0,0,.6); }
+  .hsl.drag .hl2 b { color: #ffe08a; }
+
+  /* INPUT */
+  .inw { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 1px 200px; gap: 0 20px; padding-top: 30px; }
+  .inl { display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 20px; }
+  .inl .wave { display: flex; align-items: center; gap: 12px; height: 200px; }
+  .inl .wave i { width: 23px; border-radius: 12px; background: #3d3d3d; }
+  .pill2 { height: 39px; min-width: 88px; padding: 0 14px; border-radius: 20px; background: #3d3d3d; color: #c4c4c4; font-size: 24px; }
+  .pill2.lit { background: linear-gradient(var(--cue-hi), var(--cue-lo)); color: #141414; }
+  .inl .hsl { width: min(340px, 90%); }
+  .insep { background: #4a4a4a; margin: 0 0 40px; }
+  .inr { display: flex; flex-direction: column; align-items: center; min-height: 0; }
+  .inr .mcol { flex: 1; min-height: 0; padding-top: 10px; }
+
+  /* SEND TO */
+  .sendv { gap: 0; }
+  .sendv > .rp { margin-right: 108px; }
+  .sends { flex: none; display: flex; gap: 2px; border-radius: 13px; overflow: hidden; background: #000; align-self: stretch; }
+  .sends .empty2 { width: 300px; display: grid; place-items: center; color: #9a9a9a; font-size: 15px; padding: 20px; text-align: center; background: #1b1b1b; }
+
+  /* FX (réplica do Supermassive) */
+  .fxw { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .bust { display: flex; gap: 6px; }
+  .bust button { height: 46px; min-width: 110px; padding: 0 18px; border-radius: 23px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 19px; font-weight: 700; color: #dadada;
+    background: linear-gradient(#545454, #3a3a3a); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+  .bust button i { width: 10px; height: 10px; border-radius: 2px; background: var(--tc); }
+  .bust button.lit { background: linear-gradient(var(--lit-hi), var(--lit-lo)); color: #141414; }
+  .fxsc { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; border-radius: 8px; }
+  .vsm, .vgen { position: relative; min-height: 100%; display: flex; flex-direction: column; background: linear-gradient(#2c3038, #22252b); border: 1px solid #3d424b; border-radius: 8px; }
+  .vsm.off, .vgen.off { filter: saturate(.25) brightness(.75); }
+  .vtop { display: flex; align-items: center; gap: 10px 14px; padding: 10px 12px; background: #15171b; border-bottom: 1px solid #000; flex-wrap: wrap; border-radius: 8px 8px 0 0; }
+  .vlogo { font-size: 14px; font-weight: 300; letter-spacing: .3em; color: #c9d2dc; white-space: nowrap; }
+  .vlogo b { font-weight: 700; color: #fff; }
+  .vmode { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px; border-radius: 4px; background: #0d0e11; border: 1px solid #3b4049; color: #e9eef3; min-width: 0; }
+  .vmode span { font-size: 10px; letter-spacing: .2em; color: #8d97a3; }
+  .vmode b { font-size: 17px; color: #7fd6e3; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vmode svg { width: 12px; height: 8px; fill: none; stroke: #8d97a3; stroke-width: 2; flex: none; }
+  .vright { margin-left: auto; display: flex; gap: 6px; }
+  .vbtn { height: 32px; padding: 0 12px; border-radius: 4px; background: #2f343c; border: 1px solid #474d57; color: #cfd6de; font-size: 11px; letter-spacing: .14em; display: flex; gap: 8px; align-items: center; }
+  .vbtn b { color: #7fd6e3; letter-spacing: 0; font-size: 13px; }
+  .vbtn.lit { background: #e8a33a; border-color: #e8a33a; color: #1b1b1b; }
+  .vrow { display: flex; flex-wrap: wrap; justify-content: space-around; align-items: flex-start; padding: 16px 8px 8px; gap: 8px 0; }
+  .vrow.sub { border-top: 1px solid #3a3f47; margin: 4px 14px 0; padding-top: 14px; }
+  .pk { width: 92px; display: flex; flex-direction: column; align-items: center; touch-action: none; cursor: ns-resize; padding: 4px 0; border-radius: 8px; }
+  .pk svg { width: 70px; height: 70px; overflow: visible; }
+  .vrow.main .pk { width: 118px; }
+  .vrow.main .pk svg { width: 86px; height: 86px; }
+  .vrow.sub .pk svg { width: 60px; height: 60px; }
+  .pk .pt { fill: none; stroke: #121417; stroke-width: 6; }
+  .pk .pv { fill: none; stroke: #7fd6e3; stroke-width: 6; stroke-dasharray: 0 100; }
+  .pk .pf { fill: #dfe4ea; stroke: #0b0c0e; stroke-width: 1; }
+  .pk .pp { stroke: #1b1e23; stroke-width: 3.5; stroke-linecap: round; }
+  .pk .pl { margin-top: 4px; font-size: 12px; letter-spacing: .12em; color: #e6ebf0; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .pk .pf2 { margin-top: 2px; font-size: 13px; color: #8fdbe6; font-variant-numeric: tabular-nums; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; min-height: 16px; }
+  .pk.drag { background: rgba(255,255,255,.05); }
+  .types { position: absolute; inset: 0; background: #1f2020; z-index: 5; display: flex; flex-direction: column; border-radius: 8px; }
+  .types .th { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #444; font-size: 16px; font-weight: 700; color: #ddd; }
+  .types .th button { margin-left: auto; height: 32px; padding: 0 14px; border-radius: 16px; background: linear-gradient(#6a6c70, #4a4c50); font-weight: 700; }
+  .types .tg { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 12px; align-content: start; }
+  .types .tg button { display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 8px; border-radius: 6px; background: #343537; color: #e2e2e2; font-size: 14px; text-align: left; }
+  .types .tg button i { width: 30px; height: 22px; border-radius: 4px; background: linear-gradient(#9fdc79, #4f9b26); flex: none; }
+  .types .tg button.sel { background: #d9d9d9; color: #1b1b1b; }
+
+  .chmsg { margin: auto; padding: 24px; max-width: 460px; text-align: center; color: #b9bcbf; font-size: 17px; line-height: 1.45; }
+  .chmsg b { color: #fff; }
+
+  /* ===== TOOLBAR ===== */
+  .tbar { flex: none; height: 66px; display: flex; align-items: stretch; background: linear-gradient(#3a3a3a, #414141); border-top: 1px solid #0d0d0d; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .tleft { flex: none; width: 296px; display: flex; background: #2f2f2f; border-right: 2px solid #575757; position: relative; }
+  .scene { flex: 1; display: flex; align-items: flex-end; padding: 0 8px 4px 10px; gap: 8px; }
+  .scene .sw { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; padding-top: 5px; }
+  .scene .sl { font-size: 11px; color: #e0e0e0; letter-spacing: .02em; }
+  .scene .sb { font-size: 36px; font-weight: 700; color: #f6f6f6; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scene .tpg { display: flex; gap: 6px; padding-bottom: 6px; }
+  .tp { width: 38px; height: 34px; border-radius: 17px; display: grid; place-items: center; color: #e2e2e2; background: linear-gradient(#5a5a5a, #4a4a4a); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); }
+  .tp svg { width: 14px; height: 14px; fill: currentColor; }
+  .tp.lit { background: linear-gradient(#a8e07a, #5fae29); color: #10230a; }
+  .ctile { position: absolute; left: 6px; right: 6px; top: 0; bottom: 0; border-radius: 0 0 9px 9px; overflow: hidden; color: var(--ink);
+    background: linear-gradient(#ececec, #dcdcdc 60%, #d2d2d2); display: grid; grid-template-columns: 34px 1fr 34px; }
+  .ctile button { font-size: 26px; color: #8a8a8a; }
+  .ctile .cm { position: relative; }
+  .ctile .cm .cnum { position: absolute; left: 22px; top: 6px; font-size: 17px; }
+  .ctile .cm .cnn { position: absolute; left: 0; right: 34px; bottom: 11px; text-align: center; font-size: 22px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ctile .cm .ico { position: absolute; right: 8px; top: 6px; width: 26px; height: 40px; }
+  .ctile::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: var(--tc, #1739fd); }
+  .tabs { display: flex; gap: 4px; padding-left: 6px; min-width: 0; }
+  .tab { position: relative; overflow: hidden; width: 72px; flex: 0 1 72px; min-width: 0; margin-top: 1px; border-radius: 6px 6px 0 0; font-size: 17px; font-weight: 700; color: #f4f4f4;
+    background: linear-gradient(#5b5b5b, #3c3c3c 50%, #343434); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); display: flex; align-items: flex-start; justify-content: center; padding-top: 14px; white-space: nowrap; }
+  .tab.home { padding-top: 0; align-items: center; height: 57px; border-radius: 6px; }
+  .tab.lit { background: linear-gradient(var(--lit-hi), var(--lit-lo)); color: #141414; box-shadow: inset 0 1px 0 #fff; }
+  .tab .wm { position: absolute; left: 4px; top: -3px; width: 38px; height: 30px; fill: none; stroke: currentColor; stroke-width: 3; opacity: .2; stroke-linejoin: round; stroke-linecap: round; }
+  .tab.home .wm { left: 6px; top: 0; }
+  .tab span { position: relative; }
+  .tab.fxtab { display: none; }
+  .edits { margin-left: auto; display: flex; gap: 12px; padding: 6px 12px 0 12px; border-left: 1px solid #2c2c2c; }
+  .edits > div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .edits .pill { height: 14px; min-width: 66px; padding: 0 6px; border-radius: 7px; background: #fff; color: #111; font-size: 11px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 0 0 1px #000; }
+  .edits button { height: 35px; min-width: 64px; padding: 0 8px; border-radius: 18px; font-size: 18px; font-weight: 700; color: #f2f2f2; background: linear-gradient(#5c5c5c, #4a4a4a); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); }
+  .edits button.lit { background: linear-gradient(var(--lit-hi), var(--lit-lo)); color: #141414; }
+
+  /* ===== popups, avisos ===== */
+  .pop { position: fixed; z-index: 40; background: #2f3033; border: 1px solid #5a5c60; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.6); overflow: hidden; }
+  .stepper { display: flex; flex-direction: column; width: 66px; }
+  .stepper .sv { height: 26px; display: grid; place-items: center; font-size: 15px; background: #111; font-variant-numeric: tabular-nums; }
+  .stepper button { height: 46px; display: grid; place-items: center; background: linear-gradient(#f2f2f2, #cfcfcf); color: #222; border-top: 1px solid #999; }
+  .stepper button svg { width: 26px; height: 26px; fill: none; stroke: #333; stroke-width: 2; }
+  .listpop { min-width: 180px; max-height: 60vh; overflow-y: auto; padding: 4px; }
+  .listpop button { display: flex; width: 100%; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 4px; font-size: 15px; color: #e2e2e2; text-align: left; }
+  .listpop button.sel { background: #d7d7d7; color: #1b1b1b; }
+  .listpop .ic { width: 12px; height: 12px; border-radius: 3px; background: var(--tc, #777); }
+  .util { position: fixed; z-index: 45; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100vw - 24px)); background: #1c1c1c; border: 1px solid #3c3c3c; border-radius: 10px; box-shadow: 0 20px 50px rgba(0,0,0,.7); padding: 14px 18px 18px; }
+  .util h3 { margin: 0 0 12px; text-align: center; font-size: 22px; letter-spacing: .04em; color: #eee; }
+  .util .x { position: absolute; right: 10px; top: 8px; width: 34px; height: 34px; font-size: 26px; color: #ccc; }
+  .util .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; border-top: 1px solid #2c2c2c; font-size: 16px; color: #d8d8d8; }
+  .util .row b { color: #fff; font-weight: 700; }
+  .util .row b.ok { color: #6cbe2d; }
+  .util .row b.bad { color: #f2b24a; }
+  .util .row button { height: 34px; padding: 0 14px; border-radius: 17px; background: linear-gradient(#5c5c5c, #4a4a4a); font-weight: 700; }
+  .toast { position: fixed; left: 50%; top: 110px; transform: translate(-50%, -6px); z-index: 50; background: #f0f0f0; color: #1b1b1b; padding: 9px 16px; border-radius: 5px;
+    font-size: 15px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,.55); opacity: 0; pointer-events: none; transition: opacity 160ms ease-out, transform 160ms ease-out; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .banner { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); z-index: 30; max-width: calc(100% - 24px); padding: 10px 14px; border-radius: 6px; font-size: 14px; line-height: 1.35; box-shadow: 0 8px 24px rgba(0,0,0,.55); text-align: center; }
+  .banner.off { background: #b8262d; color: #fff; }
+  .banner.bridge { background: #f0a92e; color: #1b1b1b; }
+  .phsel { display: none; align-items: stretch; gap: 3px; height: 40px; flex: 1 1 100%; }
+  .phsel button { width: 34px; border-radius: 5px; background: linear-gradient(#5c5c5c, #4a4a4a); font-size: 20px; color: #eee; }
+  .phsel .pp2 { flex: 1; min-width: 0; border-radius: 4px; background: linear-gradient(#ececec, #d2d2d2); color: var(--ink); position: relative; display: flex; align-items: center; gap: 6px; padding: 0 8px 4px; overflow: hidden; }
+  .phsel .pp2::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--tc); }
+  .phsel .pp2 span { font-size: 11px; }
+  .phsel .pp2 b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ===== telas menores ===== */
+  @media (max-width: 860px) {
+    .tleft { width: 200px; }
+    .scene .sb { font-size: 26px; }
+    .dl { display: none; }
+  }
+  @media (max-width: 599px) {
+    .mb { height: 80px; padding: 4px 4px 4px 6px; }
+    .cn { width: 70px; }
+    .online { height: 28px; font-size: 13px; }
+    .cnsub { font-size: 10px; padding-top: 6px; }
+    .sqc { padding-left: 5px; }
+    .sq { width: 42px; font-size: 9px; }
+    .vsep { margin: 2px 5px; }
+    .blk { flex: 1 1 0; padding: 4px 2px 0; }
+    .blk .bars { gap: 2px; }
+    .blk .bl { font-size: 9px; height: 16px; }
+    .body { padding: 8px 4px 4px; }
+    .home { gap: 4px; }
+    .details { flex: 1; border-radius: 10px; }
+    .details .st { width: auto; flex: 1 1 0; min-width: 0; }
+    .overview .st { width: 72px; }
+    .overview { border-radius: 10px; }
+    .proc { height: 88px; }
+    .knob { left: 6px; width: 42px; height: 42px; } .knob svg { width: 42px; height: 42px; }
+    .pmt { left: 54px; height: 32px; }
+    .chips { top: 54px; } .chip { max-width: 40px; font-size: 10px; padding: 0 4px; } .chip.ph { width: 20px; }
+    .dots { top: 78px; }
+    .on, .cue { width: 58px; height: 32px; font-size: 17px; border-radius: 16px; }
+    .fd .sc { font-size: 9px; left: calc(50% + 13px); }
+    .fd .mt { left: calc(50% - 18px); }
+    .fd .cap { width: 34px; left: calc(50% - 16px); }
+    .val { font-size: 14px; min-width: 0; }
+    .nm { height: 72px; }
+    .nl .cnum { font-size: 11px; top: 0; }
+    .nl { top: 26px; bottom: 7px; }
+    .nl .nn { font-size: 15px; } .nl .nn.s1 { font-size: 13px; } .nl .nn.s2 { font-size: 11px; }
+    .nl .ico { width: 18px; height: 26px; right: 4px; }
+    .tbar { height: 58px; }
+    .tleft { display: none; }
+    .tabs { flex: 1; gap: 2px; padding-left: 2px; }
+    .tab { flex: 1 1 0; width: auto; font-size: 11px; padding-top: 22px; letter-spacing: 0; }
+    .tab.home { height: 52px; padding-top: 10px; }
+    .tab .wm { left: 50%; margin-left: -15px; width: 30px; height: 24px; top: -2px; }
+    .tab.fxtab { display: flex; }
+    .edits { display: none; }
+    .cv { grid-template-rows: auto minmax(0, 1fr); column-gap: 4px; row-gap: 6px; }
+    .cv > .ch-h { padding-left: 2px; gap: 6px; flex-wrap: wrap; }
+    .rp { width: 70px; border-radius: 10px; }
+    .rp .back { height: 56px; }
+    .tpill { height: 40px; min-width: 0; padding: 0 12px; font-size: 19px; }
+    .tpill .wm { width: 26px; height: 26px; top: 6px; left: 4px; }
+    .kbar { display: none; }
+    .phsel { display: flex; }
+    .outm { width: 40px; padding-top: 0; } .outm .vm { width: 30px; --bx: 9px; } .outm .vs2 { display: none; }
+    .outm .ml { font-size: 13px; } .outm .mo { font-size: 9px; margin-top: 2px; }
+    .rtah { width: 38px; height: 30px; margin-bottom: 6px; } .rtah small { font-size: 7px; } .rtah b { font-size: 11px; }
+    .chg { margin-top: 4px; }
+    .chg .ylab, .chg .xlab { font-size: 13px; } .chg .ylab.z { font-size: 16px; }
+    .eqpop { min-width: 0; padding: 2px 8px; } .eqpop .er { height: 28px; font-size: 14px; } .eqpop .er span { width: 38px; } .eqpop .er b { min-width: 64px; }
+    .dynw { grid-template-columns: 1fr 1fr; grid-template-rows: max-content max-content; align-content: start; row-gap: 10px; padding-top: 4px; overflow-y: auto; }
+    .dynw > .dynbox { order: -1; grid-column: 1 / -1; grid-template-rows: minmax(170px, auto) auto; }
+    .dynbox .vcol { min-height: 170px; }
+    .dynw > .mcol, .dynw > .mpair { height: 200px; justify-self: center; }
+    .dynw .mcol .ml { font-size: 20px; } .dynw .mcol .mo { font-size: 12px; margin-top: 2px; } .dynw .vm { max-height: none; }
+    .vm .vs2 { font-size: 13px; } .vm .vs2 .s3 { display: none; }
+    .pkv { min-width: 44px; height: 22px; margin-top: 4px; padding: 0 3px; font-size: 12px; } .outm .pkv { min-width: 36px; font-size: 11px; }
+    .dynbox { grid-template-columns: 54px minmax(0, 1fr) 54px; padding: 8px; gap: 8px; }
+    .dynbox .hcol { grid-column: 1 / -1; padding-top: 0; gap: 12px; }
+    .dyng { margin-top: 40px; max-width: 220px; }
+    .vcol .vl, .vcol .vv { font-size: 15px; }
+    .hsl .hl2 { font-size: 16px; }
+    .inw { grid-template-columns: minmax(0, 1fr); padding-top: 4px; overflow-y: auto; }
+    .insep { display: none; } .inr .mcol { flex: none; height: 180px; }
+    .inl .wave { height: 120px; } .inl .wave i { width: 14px; }
+    .sendv > .rp { margin-right: 4px; }
+    .sends { flex: 1; border-radius: 10px; }
+    .sends .st { width: auto; flex: 1 1 0; min-width: 0; }
+    .bust { width: 100%; }
+    .bust button { min-width: 0; flex: 1; font-size: 14px; padding: 0 8px; height: 38px; }
+    .vlogo { font-size: 11px; letter-spacing: .16em; white-space: normal; }
+    .vright { margin-left: 0; }
+    .vrow.main .pk { width: 96px; } .vrow.main .pk svg { width: 66px; height: 66px; }
+    .pk { width: 80px; } .pk svg { width: 58px; height: 58px; }
+  }
+  @media (max-height: 560px) {
+    .mb { height: 62px; }
+    .cnsub { display: none; }
+    .online { height: 26px; font-size: 13px; }
+    .blk .bl { display: none; }
+    .body { padding-top: 6px; }
+    .proc { display: none; }
+    .fz { padding-top: 6px; }
+    .oc { flex-direction: row; gap: 4px; }
+    .on, .cue { width: 40px; height: 26px; font-size: 12px; }
+    .fd { margin-top: 6px; }
+    .fd .sc span.mn { display: none; }
+    .nm { height: 46px; }
+    .nl { top: 18px; } .nl .cnum, .nl .ico { display: none; }
+    .tbar { height: 50px; }
+    .tab { padding-top: 8px; font-size: 14px; } .tab.home { height: 44px; }
+    .edits { padding-top: 3px; } .edits button { height: 28px; } .edits .pill { height: 12px; }
+    .scene .sl { display: none; } .scene .sb { font-size: 22px; } .scene { align-items: center; }
+    .ctile .cm .cnum, .ctile .cm .ico { display: none; } .ctile .cm .cnn { bottom: 12px; font-size: 18px; }
+    .cv { grid-template-rows: 44px minmax(0, 1fr); }
+    .tpill { height: 40px; font-size: 20px; }
+    .kbar { height: 40px; } .kbar .kp, .kbar .ks { height: 32px; font-size: 16px; }
+    .rp .back { height: 44px; }
+    .dynw { padding-top: 6px; } .dyng { margin-top: 20px; max-width: 170px; }
+    .hcol { gap: 6px; } .hsl .hl2 { font-size: 15px; padding-bottom: 2px; } .hsl .tr2 { height: 30px; } .hsl .tr2 u { width: 30px; height: 30px; }
+    .vsl u { width: 30px; height: 30px; margin-left: -15px; }
+    .vcol .vl, .vcol .vv { font-size: 15px; margin-top: 2px; }
+    .inl .wave { height: 80px; } .inl { gap: 8px; padding-top: 4px; }
+    .mcol .ml { font-size: 20px; } .mcol .mo { font-size: 11px; margin-top: 2px; } .vm { margin-top: 6px; } .vm .vs2 { font-size: 11px; } .vm .vs2 .s3 { display: none; }
+    .rtah { height: 28px; margin-bottom: 4px; } .rtah b { font-size: 14px; }
+    .pkv { height: 20px; margin-top: 3px; font-size: 12px; }
+    .toast { top: 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+  body.locked .ctl, body.locked .on, body.locked .cue, body.locked .val, body.locked .tp, body.locked .tpill, body.locked .chip.ph,
+  body.locked .vbtn, body.locked .etype, body.locked .eqh, body.locked .pill2 { pointer-events: none; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="hg" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#6a6a6a"/><stop offset="1" stop-color="#3a3a3a"/></radialGradient>
+    <radialGradient id="hgs" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#e2e2e2"/><stop offset="1" stop-color="#bdbdbd"/></radialGradient>
+    <symbol id="mic" viewBox="0 0 24 34"><g transform="rotate(32 12 17)" fill="#9fb4e0"><rect x="7" y="1" width="10" height="13" rx="5"/><rect x="10.6" y="13" width="2.8" height="18" rx="1.4"/></g></symbol>
+    <symbol id="spk" viewBox="0 0 24 34"><rect x="2" y="1" width="20" height="32" rx="2" fill="#e06a6a"/><rect x="6" y="4" width="12" height="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="23" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="23" r="2" fill="#fff"/></symbol>
+    <symbol id="bus" viewBox="0 0 34 30"><rect x="1" y="6" width="22" height="22" rx="5" fill="currentColor" opacity=".55"/><rect x="11" y="2" width="22" height="22" rx="5" fill="currentColor"/><circle cx="22" cy="13" r="6" fill="none" stroke="#fff" stroke-width="2"/></symbol>
+  </defs>
+</svg>
+
+<header class="mb">
+  <div class="cn">
+    <div class="lbl">CONNECT</div>
+    <button class="online" id="online" aria-live="polite">OFFLINE</button>
+    <div class="cnsub" id="connsub">---</div>
+  </div>
+  <div class="sqc">
+    <button class="sq" id="utilBtn">UTILITY</button>
+    <button class="sq" id="lock" aria-label="Travar a tela"><span class="ring"></span>
+      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path id="lockpath" d="M8 11V7a4 4 0 0 1 7.5-2"/></svg><span>LOCK</span></button>
+  </div>
+  <div class="vsep"></div>
+  <div class="blocks" id="blocks"><div class="hl" id="hl"></div></div>
+</header>
+
+<div class="body" id="body">
+  <div class="banner hidden" id="banner"></div>
+  <section class="view home" id="v-home">
+    <div class="details" id="details"></div>
+    <div class="overview"><div class="dl" id="dests"></div><div class="ostrip" id="ostrip"></div></div>
+  </section>
+  <section class="view cv hidden" id="v-ch"></section>
+  <section class="view sendv hidden" id="v-send"></section>
+  <section class="view cv hidden" id="v-fx"></section>
+</div>
+
+<footer class="tbar">
+  <div class="tleft" id="tleft"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="edits" id="edits"></div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+// ---------- config ----------
+const FX_BUS_NAMES = ["ROOM", "VERB", "LONG VERB", "DELAY", "BAND VERB"];
+const POLL_MS = 33;              // leitura rápida: faders e medidores ~30x por segundo (a lenta, SLOW_MS, cuida do resto)
+const PING_MS = 1000;            // ping vazio pra saber se a ponte Lua responde
+const BRIDGE_STALE_MS = 3000;
+const CLIENT = Math.random().toString(36).slice(2, 8);
+const STARTED = Date.now();
+const BLOCK = 8;
+
+// ---------- estado ----------
+let tracks = [], master = null;
+let sends = {}, sendsLoaded = false;
+let fxState = { fx: [] };
+let chanFx = [], chanTracks = new Set(), chanAt = 0;
+let chanMeter = {}, ana = { status: "", sr: 48000 };   // medições do analisador (ponte): picos pré/pós-FX e espectro por canal
+let rtaHold = false, rtaPk = null;
+const valLocal = {};   // valores do EQ enquanto o dedo arrasta (Hz / dB), antes da resposta do REAPER
+const phase = {};
+let transport = { state: 0, pos: "--" };
+let pollCount = 0, busy = false, lastOk = 0, ackSeen = 0, ackAt = 0, lastPing = 0;
+const touching = {};
+const nativeQueue = new Map();
+const fxPending = new Map();
+let fxSeq = 0;
+const sig = {};
+let locked = false, nStrips = 8;
+const ui = { view: "home", start: 0, dest: "", proc: "", fxBus: "", types: false, sel: "", eqBand: 0 };
+try { Object.assign(ui, JSON.parse(localStorage.getItem("stagemix.ui") || "{}")); } catch (e) {}
+ui.types = false;
+if (!["home", "input", "eq", "gate", "comp", "send", "fx"].includes(ui.view)) ui.view = "home";
+const saveUi = () => { try { localStorage.setItem("stagemix.ui", JSON.stringify(ui)); } catch (e) {} };
+
+// ---------- util ----------
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => el.querySelectorAll(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const unesc = s => s.replace(/\\(.)/g, (_, c) => c === "n" ? "\n" : c === "t" ? "\t" : c);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const FX_NAME_RE = /rev|verb|delay|dly|eco|echo|fx|efeito/i;   // AUX com esses nomes ganham botão EDIT (como FX1/FX2 da TF)
+let auxNames = new Set();   // 01V96: os AUX 1-8 fazem o papel dos buses de efeito/monitor (tracks 33-40 do servidor)
+const isFxBus = name => auxNames.has(name) || FX_BUS_NAMES.includes(name.toUpperCase());
+const isChannel = name => /^\d+\s*-/.test(name);
+const hold = key => { touching[key] = Date.now() + 900; };
+const held = key => (touching[key] || 0) > Date.now();
+const trackByNum = n => n === 0 ? master : tracks.find(t => t.num === n);
+
+// Curva do fader igual à escala da TF (+10 no topo, 0 dB a ~80% do curso). Volume enviado continua linear (1.0 = 0 dB).
+const TAPER = [[0.005, -96], [0.116, -60], [0.22, -40], [0.415, -20], [0.611, -10], [0.807, 0], [1, 10]];
+const ZERO_POS = 0.807;
+function posToDb(p) {
+  if (p <= TAPER[0][0]) return -Infinity;
+  for (let k = 1; k < TAPER.length; k++) { const [p1, d1] = TAPER[k - 1], [p2, d2] = TAPER[k]; if (p <= p2) return d1 + (p - p1) / (p2 - p1) * (d2 - d1); }
+  return 10;
+}
+function dbToPos(db) {
+  if (!isFinite(db) || db <= -96) return 0;
+  for (let k = 1; k < TAPER.length; k++) { const [p1, d1] = TAPER[k - 1], [p2, d2] = TAPER[k]; if (db <= d2) return p1 + (db - d1) / (d2 - d1) * (p2 - p1); }
+  return 1;
+}
+const volToDb = v => v <= 0.000001 ? -Infinity : 20 * Math.log10(v);
+const dbToVol = db => isFinite(db) ? Math.pow(10, db / 20) : 0;
+const volToPos = v => dbToPos(volToDb(v));
+const posToVol = p => dbToVol(posToDb(p));
+function dbText(v) { const db = volToDb(v); if (!isFinite(db) || db < -95.9) return "-∞"; const s = db.toFixed(2); return s === "-0.00" ? "0.00" : s; }
+function dbShort(v) { const db = volToDb(v); if (!isFinite(db) || db < -95.9) return "-∞"; const r = Math.round(db); return (r > 0 ? "+" : "") + r; }
+const meterPos = db => dbToPos(db);
+// meter da faixa: -inf..0 dB ocupando até a marca de 0 dB do fader
+const meterPos0 = db => clamp(dbToPos(Math.min(db, 0)) / ZERO_POS);
+// medidores das telas de canal (IN/OUT/GR): escala do StageMix, posição de cada número medida nas fotos (0 = topo)
+const TFM = [[0, 0], [-3, .0687], [-6, .1537], [-12, .3358], [-20, .5209], [-30, .70], [-60, .979], [-72, 1]];
+function tfPos(db) {   // 1 = topo (0 dB), 0 = embaixo
+  if (!(db > -72)) return 0;
+  if (db >= 0) return 1;
+  for (let k = 1; k < TFM.length; k++) { const [d1, p1] = TFM[k - 1], [d2, p2] = TFM[k]; if (db >= d2) return 1 - (p1 + (db - d1) / (d2 - d1) * (p2 - p1)); }
+  return 0;
+}
+const rootStyle = document.documentElement.style;
+rootStyle.setProperty("--gy", dbToPos(-21).toFixed(3)); rootStyle.setProperty("--gr", dbToPos(-3).toFixed(3));
+rootStyle.setProperty("--gy2", meterPos0(-21).toFixed(3)); rootStyle.setProperty("--gr2", meterPos0(-3).toFixed(3));
+rootStyle.setProperty("--vy", (tfPos(-21) * 100).toFixed(1) + "%"); rootStyle.setProperty("--vr", (tfPos(-3) * 100).toFixed(1) + "%");
+
+function rgbOf(c) { return (c & 0x1000000) ? [(c >> 16) & 255, (c >> 8) & 255, c & 255] : null; }
+function lum(rgb) { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]); }
+const hex = rgb => "#" + rgb.map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, "0")).join("");
+function tcolor(c) { const rgb = rgbOf(c); if (!rgb) return { c: "#1739fd", i: "#fff" }; return { c: hex(rgb), i: lum(rgb) > 0.4 ? "#1b1b1b" : "#fff" }; }
+function nameInfo(t) {
+  if (t === master) return { cn: "ST", nn: "Stereo" };
+  const m = /^(\d+)\s*-\s*(.*)$/.exec(t.name);
+  if (m) return { cn: "CH " + m[1], nn: m[2] || t.name };
+  return { cn: isFxBus(t.name) ? "AUX" : "", nn: t.name };
+}
+const nnClass = s => s.length > 9 ? "s2" : s.length > 6 ? "s1" : "";
+let toastT = 0;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 1500); }
+
+// ---------- rede ----------
+// Comandos saem na hora por um canal próprio; a leitura do estado roda em paralelo.
+function fxCmd() {
+  fxSeq++; lastPing = Date.now();
+  const list = [];
+  for (const e of fxPending.values()) { e.sentSeq = fxSeq; list.push(e.cmd); }
+  if (isChView(ui.view) && ui.sel) list.push(`f.${ui.sel}=1`);   // pede à ponte os plugins do canal aberto
+  return "SET/EXTSTATE/IGREJA/in/" + encodeURIComponent(CLIENT + ":" + fxSeq + "|" + list.join(","));
+}
+let pushing = false, fxDirty = false;
+function kick() { if (!pushing) queueMicrotask(push); }
+async function push() {
+  if (pushing || (!nativeQueue.size && !fxDirty)) return;
+  pushing = true;
+  const sent = [...nativeQueue.entries()];
+  nativeQueue.clear();
+  const cmds = sent.map(e => e[1]);
+  if (fxDirty) { fxDirty = false; if (fxPending.size) cmds.push(fxCmd()); }
+  if (cmds.length) {
+    try { const r = await fetch("/_/" + cmds.join(";"), { cache: "no-store" }); if (!r.ok) throw new Error(r.status); }
+    catch (e) { for (const [k, c] of sent) if (!nativeQueue.has(k)) nativeQueue.set(k, c); await new Promise(r => setTimeout(r, 200)); }
+  }
+  pushing = false;
+  if (nativeQueue.size || fxDirty) push();
+}
+// Duas leituras independentes: a rápida (faders e medidores, ~30x/s) nunca espera a lenta (plugins, envios, ~10x/s).
+async function fetchCmds(cmds) {
+  const ctrl = new AbortController(), to = setTimeout(() => ctrl.abort(), 2500);
+  try {
+    const r = await fetch("/_/" + cmds.join(";"), { cache: "no-store", signal: ctrl.signal });
+    if (!r.ok) throw new Error(r.status);
+    const text = await r.text();
+    lastOk = Date.now();
+    parse(text);
+    return true;
+  } catch (e) { return false; }   // tenta de novo no próximo ciclo
+  finally { clearTimeout(to); }
+}
+async function poll() {   // rápida: faders/medidores de todas as tracks e os medidores do canal aberto
+  if (busy) return;
+  busy = true;
+  const cmds = [];
+  if ((fxPending.size && !pushing) || Date.now() - lastPing > PING_MS) cmds.push(fxCmd());
+  cmds.push("TRACK");
+  if (isChView(ui.view) && ui.sel) cmds.push("GET/EXTSTATE/IGREJA/m" + ui.sel);
+  pollCount++;
+  await fetchCmds(cmds);
+  busy = false;
+  render();
+}
+const SLOW_MS = 100;
+let slowBusy = false, slowCount = 0;
+async function pollSlow() {   // lenta: transporte, plugins dos efeitos e do canal aberto, fase, envios
+  if (slowBusy) return;
+  slowBusy = true;
+  const cmds = ["TRANSPORT", "GET/EXTSTATE/IGREJA/state"];
+  if (isChView(ui.view) && ui.sel) cmds.push("GET/EXTSTATE/IGREJA/c" + ui.sel);   // só o canal aberto (cada canal tem a sua chave)
+  const phaseOf = new Set();
+  if (ui.sel && ui.view !== "home") phaseOf.add(ui.sel);
+  if (slowCount % 6 === 3) for (const t of chans().slice(ui.start, ui.start + nStrips)) phaseOf.add(String(t.num));
+  for (const n of phaseOf) cmds.push(`GET/TRACK/${n}/B_PHASE`);
+  const askSends = tracks.length > 0 && (slowCount % 6 === 0 || !sendsLoaded);
+  if (askSends) for (const t of tracks) for (let y = 0; y < t.sendcnt; y++) cmds.push(`GET/TRACK/${t.num}/SEND/${y}`);
+  slowCount++;
+  if (await fetchCmds(cmds) && askSends) sendsLoaded = true;
+  slowBusy = false;
+  render();
+}
+async function pollLoop() { const t0 = Date.now(); await poll(); setTimeout(pollLoop, Math.max(0, POLL_MS - (Date.now() - t0))); }
+async function slowLoop() { const t0 = Date.now(); await pollSlow(); setTimeout(slowLoop, Math.max(0, SLOW_MS - (Date.now() - t0))); }
+
+function parse(text) {
+  const nt = [];
+  for (const line of text.split("\n")) {
+    const tok = line.split("\t");
+    switch (tok[0]) {
+      case "TRANSPORT": transport = { state: +tok[1], pos: tok[4] }; break;
+      case "TRACK": {
+        const t = { num: +tok[1], name: tok[2], flags: +tok[3], vol: +tok[4], pan: +tok[5], width: +tok[8], peak: +tok[6], sendcnt: +tok[10], recvcnt: +tok[11], color: +tok[13] };
+        if (t.num === 0) master = t; else nt.push(t);
+        break;
+      }
+      case "SEND": sends[tok[1] + "." + tok[2]] = { t: +tok[1], y: +tok[2], flags: +tok[3], vol: +tok[4], other: +tok[6] }; break;
+      case "EXTSTATE":
+        if (tok[2] === "state" && tok[3]) parseFx(unesc(tok.slice(3).join("\t")));
+        else if (/^c\d+$/.test(tok[2])) parseChan(unesc(tok.slice(3).join("\t")));
+        else if (/^m\d+$/.test(tok[2])) parseMeters(+tok[2].slice(1), unesc(tok.slice(3).join("\t")));
+        break;
+      default: {
+        const m = /^GET\/TRACK\/(\d+)\/B_PHASE$/.exec(tok[0]);
+        if (m && tok[1] !== undefined && !held("ph" + m[1])) phase[m[1]] = +tok[1];
+      }
+    }
+  }
+  if (nt.length) { tracks = nt; auxNames = new Set(nt.filter(t => t.num > 32).map(t => t.name)); }
+}
+const hexBands = s => { const a = new Float32Array(61); for (let k = 0; k < 61; k++) a[k] = parseInt(s.substr(2 * k, 2), 16) / 2 - 120; return a; };
+function parseLines(s) {
+  const fx = [], acks = {}, chs = new Set();
+  let cur = null, z = null;
+  for (const line of s.split("^")) {
+    const f = line.split("|");
+    if (f[0] === "FX") { cur = { t: +f[1], f: +f[2], track: f[3], name: f[4], enabled: f[5] === "1", presetIdx: +f[6], presetCount: +f[7], preset: f[8], params: [] }; fx.push(cur); }
+    else if (f[0] === "P" && cur) cur.params.push({ i: +f[3], name: f[4], v: +f[5], fmt: f[6], opts: f[7] ? f[7].split("~") : null });
+    else if (f[0] === "A") acks[f[1]] = +f[2];
+    else if (f[0] === "C") chs.add(+f[1]);
+    else if (f[0] === "E" && cur && cur.t === +f[1] && cur.f === +f[2]) { cur.btype = f[3].split(","); cur.bon = f[4].split(",").map(v => v !== "0"); }
+    else if (f[0] === "Z") z = { status: f[1], sr: +f[2] || 48000, seq: f[3] || "" };
+  }
+  return { fx, acks, chs, z };
+}
+let zSeq = "", mSeq = "", chanGr = {}, meterAt = 0;
+function parseChan(s) {   // plugins do canal aberto (chave c<N>, ~10x/s)
+  if (!s) return;
+  const r = parseLines(s);
+  chanFx = r.fx; chanTracks = r.chs;
+  if (r.z && (r.z.seq !== zSeq || !r.z.seq)) { zSeq = r.z.seq; chanAt = Date.now(); }   // a ponte publicou de novo: dados frescos
+  if (r.z && Date.now() - meterAt > 1500) ana = r.z;
+}
+// medidores do canal aberto (chave m<N>, ~30x/s): M = picos pré/pós-FX (com queda e exatos), G = redução de ganho, R = RTA
+function parseMeters(n, s) {
+  if (!s) return;
+  const m = {}, gr = {};
+  let z = null;
+  for (const line of s.split("^")) {
+    const f = line.split("|");
+    if (f[0] === "M") { m.pk = [+f[2] / 10, +f[3] / 10]; m.mx = f[4] !== undefined ? [+f[4] / 10, +f[5] / 10] : m.pk; }
+    else if (f[0] === "R" && f[2] && f[3]) { m.pre = hexBands(f[2]); m.post = hexBands(f[3]); }
+    else if (f[0] === "G") gr[f[2]] = Math.min(150, Math.abs(+f[3]) || 0);
+    else if (f[0] === "Z") z = { status: f[1], sr: +f[2] || 48000, seq: f[3] || "" };
+  }
+  chanMeter = { [n]: m }; chanGr = { [n]: gr };
+  if (z) { ana = z; if (z.seq !== mSeq) { mSeq = z.seq; meterAt = Date.now(); } }
+}
+const grOf = f => chanGr[f.t]?.[f.f];
+function parseFx(s) {
+  const { fx, acks } = parseLines(s);
+  fxState = { fx };
+  const myAck = acks[CLIENT] || 0;
+  if (myAck > ackSeen) { ackSeen = myAck; ackAt = Date.now(); }
+  for (const [k, e] of fxPending) if (e.sentSeq && e.sentSeq <= myAck) fxPending.delete(k);
+}
+function connState() {
+  const now = Date.now();
+  if (!lastOk) return now - STARTED > 3000 ? "off" : "wait";
+  if (now - lastOk > 2000) return "off";
+  if (now - ackAt > BRIDGE_STALE_MS && now - STARTED > BRIDGE_STALE_MS) return "bridge";
+  return "ok";
+}
+
+// ---------- comandos e controles ----------
+function sendNative(key, cmd) { nativeQueue.set(key, cmd); kick(); }
+function sendFx(key, cmd) { fxPending.set(key, { cmd, sentSeq: 0 }); fxDirty = true; hold(key); kick(); }
+function setCtl(el, pos, final) {
+  const d = el.dataset, n = +d.n || 0;
+  if (n > 1) pos = Math.round(pos * (n - 1)) / (n - 1);
+  pos = clamp(pos);
+  el._pos = pos; hold(d.key); drawCtl(el);
+  const e = final ? "e" : "";
+  if (d.k === "vol") sendNative(d.key, `SET/TRACK/${d.t}/VOL/${posToVol(pos).toFixed(6)}${e}`);
+  else if (d.k === "send") sendNative(d.key, `SET/TRACK/${d.t}/SEND/${d.y}/VOL/${posToVol(pos).toFixed(6)}${e}`);
+  else if (d.k === "pan") sendNative(d.key, `SET/TRACK/${d.t}/PAN/${(pos * 2 - 1).toFixed(4)}${e}`);
+  else if (d.k === "width") sendNative(d.key, `SET/TRACK/${d.t}/WIDTH/${(pos * 2 - 1).toFixed(4)}${e}`);
+  else if (d.k === "param") { delete valLocal[d.key]; sendFx(d.key, `${d.key}=${pos.toFixed(5)}`); }
+  else if (d.k === "val") {
+    const sc = SCALES[d.sc], v = scVal(sc, pos), p = paramByKey(d.key);
+    setVal(d.key, v);
+    const out = el.querySelector("[data-fmt]"); if (out && p) out.textContent = valTxt(p, v, sc);
+  }
+}
+// valor no número que o plugin mostra (Hz, dB, ms, razão): a ponte acha a posição do plugin que dá esse número
+function setVal(key, v) {
+  valLocal[key] = v;
+  sendFx(key, `v.${key.slice(2)}=${isFinite(v) ? v.toFixed(Math.abs(v) >= 1000 ? 1 : 2) : v > 0 ? "inf" : "-inf"}`);
+}
+// escalas dos sliders de GATE/COMP, como no StageMix (o plugin usa outra escala por dentro)
+const SCALES = {
+  gthr: { lo: -72, hi: 0 }, grng: { lo: -72, hi: 0, inf: true }, cthr: { lo: -54, hi: 0 }, gain: { lo: 0, hi: 18 }, knee: { lo: 0, hi: 5 },
+  att: { lo: 0.1, hi: 120, log: true, zero: true, ms: true }, hold: { lo: 0.1, hi: 2000, log: true, zero: true, ms: true }, rel: { lo: 5, hi: 5000, log: true, ms: true },
+  ratio: { list: [1, 1.1, 1.3, 1.5, 1.7, 2, 2.5, 3, 3.5, 4, 5, 6, 8, 10, 20, Infinity] },
+};
+function scVal(sc, p) {   // posição do slider (0..1) -> valor
+  if (sc.list) return sc.list[Math.round(clamp(p) * (sc.list.length - 1))];
+  if (sc.inf && p < 0.005) return -Infinity;
+  if (sc.zero && p < 0.005) return 0;
+  return sc.log ? sc.lo * Math.pow(sc.hi / sc.lo, p) : sc.lo + p * (sc.hi - sc.lo);
+}
+function scPos(sc, v) {   // valor -> posição do slider
+  if (isNaN(v)) return 0;
+  if (sc.list) { const big = x => isFinite(x) ? x : 1e9; let k = 0; sc.list.forEach((x, i) => { if (Math.abs(big(x) - big(v)) < Math.abs(big(sc.list[k]) - big(v))) k = i; }); return k / (sc.list.length - 1); }
+  if (v === -Infinity) return 0;
+  return sc.log ? (v <= sc.lo ? 0 : clamp(Math.log(v / sc.lo) / Math.log(sc.hi / sc.lo))) : clamp((v - sc.lo) / (sc.hi - sc.lo));
+}
+function valTxt(p, v, sc) {
+  if (isNaN(v)) return p.fmt;
+  if (sc && sc.list) return !isFinite(v) ? "∞:1" : (v < 10 ? v.toFixed(1) : v.toFixed(0)) + ":1";
+  if (!isFinite(v)) return v < 0 ? "-∞" : "∞";
+  if (sc && sc.ms) return v >= 1000 ? (v / 1000).toFixed(2) + " s" : fmtLike(p.fmt, v) + " ms";
+  return fmtLike(p.fmt, v);
+}
+function panLabel(p) { const v = Math.round(Math.abs(p) * 63); return v === 0 ? "C" : (p < 0 ? "L" : "R") + v; }
+function drawCtl(el) {
+  const p = el._pos ?? 0, d = el.dataset, cl = el.classList;
+  if (cl.contains("pk")) {
+    el.querySelector(".pv").style.strokeDasharray = `${(p * 100).toFixed(2)} 100`;
+    el.querySelector(".pp").setAttribute("transform", `rotate(${(-135 + 270 * p).toFixed(1)} 32 32)`);
+    if (+d.n > 1 && el._opts) el.querySelector(".pf2").textContent = el._opts[Math.round(p * (+d.n - 1))] || "";
+    return;
+  }
+  if (cl.contains("knob")) {
+    el.querySelector(".kv").style.strokeDasharray = `${(p * 100).toFixed(2)} 100`;
+    const s = el.querySelector("span"), txt = dbShort(posToVol(p)); if (s.textContent !== txt) s.textContent = txt;
+    return;
+  }
+  if (cl.contains("pan") && d.k === "pan") {
+    const pan = p * 2 - 1, lbl = el.querySelector(".pl"), txt = panLabel(pan);
+    if (lbl.textContent !== txt) { lbl.textContent = txt; lbl.classList.toggle("side", txt !== "C"); }
+    const a = Math.abs(pan), x = 50 + Math.sign(pan) * 48 * a;
+    el.querySelector(".wf").setAttribute("points", a < 0.008 ? "" : `50,7 ${x.toFixed(1)},${(7 - 5 * a).toFixed(2)} ${x.toFixed(1)},${(7 + 5 * a).toFixed(2)}`);
+    el.querySelector(".d").style.display = a < 0.008 ? "" : "none";
+    return;
+  }
+  el.style.setProperty("--p", p.toFixed(4));
+  const out = el._out || (el._out = el.querySelector("[data-out]") || el.closest(".st")?.querySelector(".val"));
+  if (!out) return;
+  let txt = null;
+  if (d.k === "vol" || d.k === "send") txt = dbText(posToVol(p));
+  else if (d.k === "pan") txt = panLabel(p * 2 - 1);
+  else if (d.k === "width") txt = Math.round((p * 2 - 1) * 100) + "%";
+  else if (+d.n > 1 && el._opts) txt = el._opts[Math.round(p * (+d.n - 1))];
+  if (txt !== null && out.textContent !== txt) out.textContent = txt;
+}
+function syncCtl(el, pos) {
+  if (!el || el._drag || held(el.dataset.key)) return;
+  if (el._pos !== undefined && Math.abs(el._pos - pos) < 0.0004) return;
+  el._pos = pos; drawCtl(el);
+}
+function resetCtl(el) {
+  const k = el.dataset.k;
+  if (k === "vol" || k === "send") { setCtl(el, ZERO_POS, true); toast("0.00 dB"); }
+  else if (k === "pan") { setCtl(el, 0.5, true); toast("Pan C"); }
+  else if (k === "width") { setCtl(el, 1, true); toast("Width 100%"); }
+  else if (el._undo !== undefined) { setCtl(el, el._undo, true); toast("Valor anterior"); }
+}
+
+// ---------- gestos ----------
+// Arrasto relativo (não pula). Na área dos canais, arrastar de lado troca de banco, como no StageMix.
+let drag = null;
+document.addEventListener("pointerdown", e => {
+  if (e.button > 0) return;
+  closePop(e);
+  const h = e.target.closest(".eqh");
+  if (h && !locked) {
+    selectBand(+h.dataset.band);
+    const r = h.ownerSVGElement.getBoundingClientRect(), d = h.dataset;
+    const cur = k => { const p = k && paramByKey(k); return p ? (valLocal[k] !== undefined && held(k) ? valLocal[k] : numOf(p.fmt)) : NaN; };
+    drag = { eq: h, id: e.pointerId, x: e.clientX, y: e.clientY, W: r.width, H: r.height, active: false, hz: cur(d.fk), db: cur(d.gk) };
+    try { h.setPointerCapture(e.pointerId); } catch (err) {}
+    return;
+  }
+  const el = e.target.closest(".ctl");
+  const inDetails = e.target.closest("#details");
+  if (el && !locked) {
+    const axis = el.dataset.axis || "y";
+    let range = 160;
+    const tr = el.querySelector(".slot, .tr2, .vsl");
+    if (tr) range = Math.max(60, (axis === "y" ? tr.clientHeight : tr.clientWidth) - (tr.classList.contains("slot") ? 0 : 40));
+    if (el.classList.contains("pan")) range = el.clientWidth * 1.2;
+    drag = { el, axis, range, id: e.pointerId, x: e.clientX, y: e.clientY, start: el._pos ?? 0, active: false, swipe: false, moved: false, inDetails };
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+  } else if (inDetails && !e.target.closest("button")) {
+    drag = { el: null, id: e.pointerId, x: e.clientX, y: e.clientY, swipe: true, active: false, inDetails };
+  }
+});
+document.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (drag.swipe) { e.preventDefault(); return; }
+  if (drag.eq) {
+    e.preventDefault();
+    if (!drag.active && Math.hypot(dx, dy) < 3) return;
+    drag.active = true;
+    const d = drag.eq.dataset;   // o ponto segue o dedo: frequência na escala log do gráfico, ganho em dB
+    if (isFinite(drag.hz)) setVal(d.fk, clamp(drag.hz * Math.pow(10, dx * (HF - LF) / (drag.W - PADL)), 20, 20000));
+    if (d.gk && isFinite(drag.db)) setVal(d.gk, clamp(drag.db - dy * 2 * EQ_RANGE / (drag.H - PADB - 16), -EQ_RANGE, EQ_RANGE));
+    drawEqNow();
+    return;
+  }
+  if (!drag.active) {
+    const main = drag.axis === "y" ? Math.abs(dy) : Math.abs(dx);
+    const other = drag.axis === "y" ? Math.abs(dx) : Math.abs(dy);
+    if (other > 16 && other > main * 1.5 && drag.inDetails && drag.axis === "y") { drag.swipe = true; return; }
+    if (main < 5 || main < other) { if (other > 8) drag.moved = true; return; }
+    drag.active = drag.moved = true;
+    drag.x = e.clientX; drag.y = e.clientY;
+    drag.el._drag = true; drag.el._undo = drag.start;
+    drag.el.classList.add("drag");
+    return;
+  }
+  e.preventDefault();
+  const delta = drag.axis === "y" ? -(e.clientY - drag.y) : (e.clientX - drag.x);
+  const pos = clamp(drag.start + delta / drag.range);
+  if (Math.abs(pos - (drag.el._pos ?? 0)) > 0.0002) setCtl(drag.el, pos, false);
+}, { passive: false });
+function endDrag(e, cancelled) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const g = drag; drag = null;
+  if (g.eq) {
+    const d = g.eq.dataset;
+    if (g.active) { if (d.fk) hold(d.fk); if (d.gk) hold(d.gk); return; }
+    const now = Date.now();   // dois toques na bolinha: ganho volta pra 0 dB (como no StageMix)
+    if (!cancelled && d.gk && now - (g.eq._tap || 0) < 330) { g.eq._tap = 0; setVal(d.gk, 0); drawEqNow(); toast("Gain 0.0dB"); } else g.eq._tap = now;
+    return;
+  }
+  if (g.swipe) {
+    const dx = e.clientX - g.x;
+    if (!cancelled && Math.abs(dx) > 50) moveBank(dx < 0 ? 1 : -1);
+    if (g.el) { g.el._drag = false; g.el.classList.remove("drag"); }
+    return;
+  }
+  const el = g.el;
+  el._drag = false; el.classList.remove("drag");
+  if (g.active) { setCtl(el, el._pos ?? 0, true); return; }
+  if (cancelled || g.moved) return;
+  const now = Date.now();
+  if (now - (el._tap || 0) < 330) { el._tap = 0; resetCtl(el); } else el._tap = now;
+}
+document.addEventListener("pointerup", e => endDrag(e, false));
+document.addEventListener("pointercancel", e => endDrag(e, true));
+function moveBank(dir) {
+  const next = clamp(ui.start + dir * nStrips, 0, Math.max(0, chans().length - nStrips));
+  if (next !== ui.start) { ui.start = next; saveUi(); render(); }
+}
+
+// ---------- popups ----------
+let pop = null;
+function closePop(e) {
+  if (!pop) return;
+  if (e && (pop.contains(e.target) || e.target === pop._anchor)) return;
+  pop.remove(); pop = null;
+  $$(".val.sel").forEach(x => x.classList.remove("sel"));
+}
+function openPop(html, anchor, place) {
+  closePop();
+  pop = document.createElement("div");
+  pop.className = "pop"; pop.innerHTML = html; pop._anchor = anchor;
+  document.body.appendChild(pop);
+  const r = anchor.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+  let x = r.left + r.width / 2 - pr.width / 2, y = place === "above" ? r.top - pr.height - 6 : r.bottom + 6;
+  if (y + pr.height > innerHeight - 6) y = r.top - pr.height - 6;
+  if (y < 6) y = 6;
+  pop.style.left = clamp(x, 6, innerWidth - pr.width - 6) + "px"; pop.style.top = y + "px";
+  return pop;
+}
+function openStepper(valEl) {
+  const fader = valEl.closest(".st").querySelector(".fd.ctl");
+  if (!fader || locked) return;
+  valEl.classList.add("sel");
+  const p = openPop(`<div class="stepper"><div class="sv"></div>
+    <button data-step="1" aria-label="Subir"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg></button>
+    <button data-step="-1" aria-label="Descer"><svg viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></button></div>`, valEl);
+  const show = () => { p.querySelector(".sv").textContent = dbText(posToVol(fader._pos ?? 0)); };
+  show();
+  p.addEventListener("click", e => {
+    const b = e.target.closest("[data-step]"); if (!b) return;
+    let db = posToDb(fader._pos ?? 0);
+    db = isFinite(db) ? db + 0.5 * +b.dataset.step : (+b.dataset.step > 0 ? -60 : -Infinity);
+    if (isFinite(db) && db < -60.4 && +b.dataset.step < 0) db = -Infinity;
+    setCtl(fader, dbToPos(clamp(db, -96, 10)), true); show();
+  });
+}
+function openDestPop(anchor) {
+  openPop(`<div class="listpop">${fxBuses().map(d => `<button data-dest="${d.num}" class="${ui.dest === String(d.num) ? "sel" : ""}" style="--tc:${tcolor(d.color).c}"><span class="ic"></span>${esc(d.name)}</button>`).join("")}
+    ${ui.dest ? `<button data-dest="">Exit (sair dos envios)</button>` : ""}</div>`, anchor, "above");
+}
+function openUtility() {
+  closePop();
+  const cs = connState(), el = document.createElement("div");
+  el.className = "util";
+  el.innerHTML = `<button class="x" data-uclose="1" aria-label="Fechar">×</button><h3>UTILITY</h3>
+    <div class="row">Servidor da 01V96 (PC)<b class="${cs === "off" ? "bad" : "ok"}">${cs === "off" ? "Sem conexão" : "Conectado"}</b></div>
+    <div class="row">Diagnóstico da mesa<a href="/diag" target="_blank" style="color:inherit;font-weight:600">abrir</a></div>
+    <div class="row">Canais<b>${chans().length}</b></div>
+    <div class="row">Travar a tela<button data-ulock="1">${locked ? "Destravar" : "Travar"}</button></div>
+    <div class="row">Recarregar a página<button data-ureload="1">Recarregar</button></div>`;
+  pop = el; el._anchor = $("#utilBtn"); document.body.appendChild(el);
+}
+
+// ---------- cliques ----------
+document.addEventListener("click", e => {
+  const nl = e.target.closest(".st .nl");
+  if (nl) {
+    const st = nl.closest(".st");
+    if (st.closest(".sends")) { ui.dest = st.dataset.row; ui.view = "home"; saveUi(); render(); return; }   // envio → SENDS ON FADER desse efeito
+    const t = trackByNum(+st.dataset.row);   // toque no nome escolhe o canal das telas INPUT/EQ/GATE/COMP/SEND TO
+    if (t && isChannel(t.name)) { ui.sel = String(t.num); lastPing = 0; saveUi(); render(); }
+    return;
+  }
+  const b = e.target.closest("button");
+  if (!b) return;
+  const d = b.dataset;
+  if (b.id === "lock" || b.id === "online") return;
+  if (b.id === "utilBtn") { openUtility(); return; }
+  if (d.uclose) { closePop(); return; }
+  if (d.ulock) { closePop(); $("#lock").click(); return; }
+  if (d.ureload) { location.reload(); return; }
+  if (d.view) { ui.view = d.view; ui.types = false; lastPing = 0; saveUi(); render(); return; }
+  if (d.edit) { ui.view = "fx"; ui.fxBus = d.edit; ui.types = false; saveUi(); render(); return; }
+  if (d.fxbus) { ui.fxBus = d.fxbus; ui.types = false; saveUi(); render(); return; }
+  if (d.chstep) { stepSel(+d.chstep); return; }
+  if (d.blk !== undefined) { ui.start = clamp(+d.blk * BLOCK, 0, Math.max(0, chans().length - nStrips)); ui.view = "home"; saveUi(); render(); return; }
+  if (d.dest !== undefined) { ui.dest = d.dest === ui.dest ? "" : d.dest; saveUi(); closePop(); render(); return; }
+  if (d.act === "send") { openDestPop(b); return; }
+  if (d.proc !== undefined) { cycleProc(); return; }
+  if (d.rtahold) { rtaHold = !rtaHold; rtaPk = null; b.classList.toggle("lit", rtaHold); drawEqNow(); return; }
+  if (d.pkv) { delete pkHold[d.pkv]; render(); toast("Pico zerado"); return; }
+  if (b.classList.contains("back")) { ui.view = "home"; saveUi(); render(); return; }
+  if (locked) { toast("Tela travada: segure LOCK"); return; }
+  if (b.classList.contains("val")) { openStepper(b); return; }
+  if (d.on !== undefined) {
+    const [t, y] = d.on.split(".");
+    if (y !== undefined) { sendNative(`sm${t}.${y}`, `SET/TRACK/${t}/SEND/${y}/MUTE/-1`); hold(`sm${t}.${y}`); }
+    else { sendNative("m" + t, `SET/TRACK/${t}/MUTE/-1`); hold("m" + t); }
+    b.classList.toggle("lit");
+    b.closest(".st")?.querySelector(".fd")?.classList.toggle("off", !b.classList.contains("lit"));
+    return;
+  }
+  if (d.cue !== undefined) { sendNative("s" + d.cue, `SET/TRACK/${d.cue}/SOLO/-1`); hold("s" + d.cue); b.classList.toggle("lit"); return; }
+  if (d.phase) {
+    const v = phase[d.phase] ? 0 : 1;
+    phase[d.phase] = v; hold("ph" + d.phase);
+    sendNative("ph" + d.phase, `SET/TRACK/${d.phase}/B_PHASE/${v}`);
+    $$(`[data-phase="${d.phase}"]`).forEach(x => x.classList.toggle("lit", !!v)); return;
+  }
+  if (d.act === "play") { sendNative("tp", "1007"); return; }
+  if (d.act === "stop") { sendNative("tp", "1016"); return; }
+  if (d.bypass) {   // liga/desliga o plugin (título EQ/GATE/COMP aceso = ligado; BYPASS aceso = desligado)
+    const [t, f] = d.bypass.split(".").map(Number);
+    const fx = fxState.fx.concat(chanFx).find(x => x.t === t && x.f === f);
+    const cur = held(`b.${t}.${f}`) ? b._on : fx?.enabled;
+    const on = !cur;
+    b._on = on;
+    b.classList.toggle("lit", b.classList.contains("tpill") ? on : !on);
+    sendFx(`b.${t}.${f}`, `b.${t}.${f}=${on ? 1 : 0}`);
+    return;
+  }
+  if (d.sync) { openSyncPop(b); return; }
+  if (b.classList.contains("etype")) { ui.types = true; sig.fx = ""; render(); return; }
+  if (d.closetypes !== undefined) { ui.types = false; sig.fx = ""; render(); return; }
+  if (d.mode !== undefined) {
+    const f = curFx(), p = f && pByName(f, "Mode");
+    if (p && p.opts) sendFx(`p.${f.t}.${f.f}.${p.i}`, `p.${f.t}.${f.f}.${p.i}=${(+d.mode / (p.opts.length - 1)).toFixed(5)}`);
+    ui.types = false; sig.fx = ""; render(); toast(p && p.opts ? p.opts[+d.mode] : "");
+    return;
+  }
+  if (d.opt !== undefined) { sendFx(d.key, `${d.key}=${(+d.opt / (+d.n - 1)).toFixed(5)}`); closePop(); return; }
+});
+
+// LOCK: um toque trava, segurar 0,7 s destrava
+(() => {
+  const btn = $("#lock"); let t = 0;
+  const setLock = v => {
+    locked = v;
+    document.body.classList.toggle("locked", v);
+    btn.classList.toggle("on", v);
+    $("#lockpath").setAttribute("d", v ? "M8 11V7a4 4 0 0 1 8 0v4" : "M8 11V7a4 4 0 0 1 7.5-2");
+    toast(v ? "Tela travada" : "Tela destravada");
+  };
+  btn.addEventListener("pointerdown", () => {
+    if (!locked) return;
+    btn.classList.add("arming");
+    t = setTimeout(() => { btn.classList.remove("arming"); t = 0; setLock(false); btn._just = true; }, 700);
+  });
+  const cancel = () => { if (t) { clearTimeout(t); t = 0; btn.classList.remove("arming"); } };
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => btn.addEventListener(ev, cancel));
+  btn.addEventListener("click", () => { if (btn._just) { btn._just = false; return; } if (!locked) setLock(true); else toast("Segure LOCK para destravar"); });
+  btn.addEventListener("contextmenu", e => e.preventDefault());
+})();
+addEventListener("resize", () => { for (const k in sig) sig[k] = ""; gW = gH = 0; render(); });
+
+// ---------- dados derivados ----------
+function fxBuses() { return tracks.filter(t => isFxBus(t.name) || fxState.fx.some(f => f.t === t.num)); }
+function chans() { return tracks.filter(t => isChannel(t.name)); }
+function sendTo(t, destNum) { for (let y = 0; y < t.sendcnt; y++) { const s = sends[t.num + "." + y]; if (s && s.other === destNum) return s; } return null; }
+function fxSendsOf(t) {
+  const out = [];
+  for (let y = 0; y < t.sendcnt; y++) { const s = sends[t.num + "." + y], dst = s && trackByNum(s.other); if (dst && isFxBus(dst.name)) out.push({ ...s, dst }); }
+  return out;
+}
+function cycleProc() {
+  const b = fxBuses(); if (!b.length) return;
+  const k = b.findIndex(x => String(x.num) === ui.proc);
+  ui.proc = String(b[(k + 1) % b.length].num); saveUi(); sig.details = ""; render();
+}
+function selTrack() {
+  const list = chans();
+  let t = list.find(x => String(x.num) === ui.sel);
+  if (!t && list.length) { t = list[0]; ui.sel = String(t.num); }
+  return t;
+}
+function stepSel(dir) {
+  const list = chans(), i = list.findIndex(x => String(x.num) === ui.sel);
+  const n = list[clamp(i + dir, 0, list.length - 1)];
+  if (n && String(n.num) !== ui.sel) { ui.sel = String(n.num); lastPing = 0; saveUi(); render(); }
+}
+
+// ---------- meters ----------
+function updateMeter(m, db, map = meterPos) {
+  if (!m) return;
+  const l = map(db), t = Date.now();
+  if (m._l === undefined || Math.abs(m._l - l) > 0.004) { m._l = l; m.style.setProperty("--l", l.toFixed(3)); }
+  if (m._h === undefined || l >= m._h) { m._h = l; m._ht = t; } else if (t - m._ht > 1500) m._h = Math.max(l, m._h - 0.02);
+  m.style.setProperty("--h", m._h.toFixed(3));
+  if (db >= -0.3) m._clip = t;
+  const clip = t - (m._clip || 0) < 2000;
+  if (clip !== !!m._isClip) { m._isClip = clip; m.classList.toggle("clip", clip); }
+}
+
+// ---------- peças de interface ----------
+const ARC = "M11.5 52.5 A29 29 0 1 1 52.5 52.5";
+const SCALE = [[10, "10"], [0, "0"], [-10, "10"], [-20, "20"], [-40, "40", "mn"], [-60, "60"], [-Infinity, "∞", "inf"]];
+const scaleHTML = () => `<div class="sc">${SCALE.map(([db, l, c]) => `<span class="${c || ""}" style="bottom:${(dbToPos(db) * 100).toFixed(2)}%">${l}</span>`).join("")}</div>`;
+const ICON = { mic: `<svg class="ico"><use href="#mic"/></svg>`, spk: `<svg class="ico"><use href="#spk"/></svg>` };
+const busIcon = c => `<svg class="ico" style="color:${c}"><use href="#bus"/></svg>`;
+const WM = {
+  home: '<svg class="wm" viewBox="0 0 48 32"><path d="M6 18L24 4l18 14M12 14v16h24V14"/></svg>',
+  input: '<svg class="wm" viewBox="0 0 48 32"><path d="M2 16h14M10 10l6 6-6 6M22 4v24M30 8v16M38 2v28"/></svg>',
+  eq: '<svg class="wm" viewBox="0 0 48 32"><path d="M2 26C8 26 9 4 14 4s6 22 11 22 6-14 11-14 7 6 10 6"/></svg>',
+  gate: '<svg class="wm" viewBox="0 0 48 32"><path d="M4 30V2M4 30h40M14 30V18l28-14"/></svg>',
+  comp: '<svg class="wm" viewBox="0 0 48 32"><path d="M4 30V2M4 30h40M4 30l22-18 18-6"/></svg>',
+  send: '<svg class="wm" viewBox="0 0 48 32"><rect x="4" y="4" width="14" height="24" rx="2"/><path d="M24 10h16M24 16h20M24 22h12"/></svg>',
+  fx: '<svg class="wm" viewBox="0 0 48 32"><path d="M2 18c4-10 7-10 10 0s6 10 10 0 6-10 10 0 6 10 14-4"/></svg>',
+};
+const PAN_SVG = `<svg viewBox="0 0 100 14" preserveAspectRatio="none"><polygon class="w" points="2,2 2,12 50,7"/><polygon class="w" points="98,2 98,12 50,7"/><polygon class="wf" points=""/><circle class="d" cx="50" cy="7" r="4.2"/></svg>`;
+function procHTML(t) {
+  const buses = fxBuses();
+  const sel = buses.find(b => String(b.num) === ui.proc) || buses[0];
+  const s = sel && fxSendsOf(t).find(x => x.other === sel.num);
+  return `<div class="proc">
+    ${s ? `<div class="ctl knob" data-k="send" data-axis="y" data-key="snd${t.num}.${s.y}" data-t="${t.num}" data-y="${s.y}">` : `<div class="knob none">`}
+      <svg viewBox="0 0 64 64"><path class="kt" d="${ARC}" pathLength="100"/><path class="kv" d="${ARC}" pathLength="100"/><circle class="kc" cx="32" cy="32" r="21"/></svg><span>${s ? "" : "—"}</span></div>
+    <div class="pmt"><b></b></div>
+    <div class="chips">${sel ? `<button class="chip" data-proc="1">${esc(sel.name)}</button>` : ""}<button class="chip ph" data-phase="${t.num}" aria-label="Inverter fase">Φ</button></div>
+    <div class="dots">${buses.map(b => `<i class="${b === sel ? "cur" : ""}"></i>`).join("")}</div>
+  </div>`;
+}
+// faixa de canal. Opções: send (fader controla o envio), master, dis (sem envio no SENDS ON FADER),
+// noProc / blankProc / noName (partes escondidas), plate / plateName (etiqueta de um bus de efeito), row (id da faixa)
+function stripHTML(t, o = {}) {
+  const ni = o.plateName || nameInfo(t), tc = tcolor(t.color);
+  const key = o.send ? `snd${t.num}.${o.send.y}` : `v${t.num}`;
+  const attrs = o.send ? `data-k="send" data-t="${t.num}" data-y="${o.send.y}"` : `data-k="vol" data-t="${t.num}"`;
+  const plateColor = o.plate || tc.c;
+  const proc = o.noProc ? "" : (o.master || o.blankProc) ? `<div class="proc blank">${o.master ? `<div class="dots"><i class="cur"></i><i></i><i></i></div>` : ""}</div>` : procHTML(t);
+  const pan = o.master ? `<div class="pan"><span class="pl">BAL</span>${PAN_SVG}</div>`
+    : o.plateName ? "" : `<div class="ctl pan" data-k="pan" data-axis="x" data-key="pan${t.num}" data-t="${t.num}"><span class="pl">C</span>${PAN_SVG}</div>`;
+  const icon = o.master ? ICON.spk : o.plateName ? busIcon(plateColor) : ICON.mic;
+  return `<div class="st${o.master ? " master" : ""}${o.dis ? " dis" : ""}" data-row="${o.row ?? t.num}" style="--tc:${plateColor}">
+    ${proc}
+    <div class="fz">
+      <div class="oc"><button class="on" data-on="${o.send ? t.num + "." + o.send.y : t.num}">ON</button>
+      ${o.send ? `<button class="cue pre" disabled title="Pré/pós-fader: mude na mesa">PRE</button>` : `<button class="cue${o.master ? " ghost" : ""}" data-cue="${t.num}">CUE</button>`}</div>
+      <div class="fd ctl${o.send ? " snd" : ""}" data-axis="y" data-key="${key}" ${attrs} style="${o.sc ? `--sc:${o.sc}` : ""}"><div class="mt"><b></b><i></i></div><div class="slot"><i></i></div><div class="cap"></div>${scaleHTML()}</div>
+      <button class="val"></button>
+    </div>
+    ${o.noName ? "" : `<div class="nm">${pan}<div class="nl"><span class="cnum">${esc(ni.cn)}</span>${icon}<span class="nn ${nnClass(ni.nn)}">${esc(ni.nn)}</span></div><div class="cb"></div></div>`}
+  </div>`;
+}
+function updateStrip(el, t, o = {}) {
+  if (!el) return;
+  const onBtn = el.querySelector("button.on"), fd = el.querySelector(".fd");
+  const isSel = !o.noSel && String(t.num) === ui.sel && isChannel(t.name);
+  if (el._sel !== isSel) { el._sel = isSel; el.classList.toggle("sel", isSel); }
+  if (o.send) {
+    const cur = sends[t.num + "." + o.send.y] || o.send, sOn = !(cur.flags & 8);
+    if (!held(`sm${t.num}.${o.send.y}`)) { onBtn.classList.toggle("lit", sOn); fd.classList.toggle("off", !sOn); }
+    syncCtl(fd, volToPos(cur.vol));
+  } else {
+    const isOn = !(t.flags & 8);
+    if (!held("m" + t.num)) { onBtn.classList.toggle("lit", isOn); fd.classList.toggle("off", !isOn); }
+    syncCtl(fd, volToPos(t.vol));
+  }
+  const cue = el.querySelector(".cue[data-cue]");
+  if (cue && !held("s" + t.num)) cue.classList.toggle("lit", !!(t.flags & 16));
+  updateMeter(el.querySelector(".fd .mt"), t.peak / 10, meterPos0);
+  const pm = el.querySelector(".pmt"); if (pm) updateMeter(pm, t.peak / 10, meterPos0);
+  syncCtl(el.querySelector(".pan.ctl"), (t.pan + 1) / 2);
+  const ph = el.querySelector(".chip.ph"); if (ph && !held("ph" + t.num)) ph.classList.toggle("lit", !!phase[t.num]);
+  const kn = el.querySelector(".knob.ctl");
+  if (kn) { const s = sends[t.num + "." + kn.dataset.y]; if (s) { syncCtl(kn, volToPos(s.vol)); const m = !!(s.flags & 8); if (kn._m !== m) { kn._m = m; kn.classList.toggle("smute", m); } } }
+}
+
+// ---------- render geral ----------
+function render() {
+  const cs = connState();
+  const on = $("#online"), sub = $("#connsub");
+  const txt = cs === "off" ? "OFFLINE" : cs === "wait" ? "…" : "ONLINE";
+  if (on.textContent !== txt) on.textContent = txt;
+  on.className = "online" + (cs === "ok" ? " ok" : cs === "bridge" ? " warn" : "");
+  const stxt = cs === "bridge" ? "PONTE OFF" : cs === "off" ? "---" : "01V96";
+  if (sub.textContent !== stxt) { sub.textContent = stxt; sub.classList.toggle("warn", cs === "bridge"); }
+  const ban = $("#banner");
+  if (cs === "off" && lastOk) { ban.className = "banner off"; ban.textContent = "Sem conexão com o PC da mesa (servidor 01V96). Tentando de novo…"; }
+  else if (cs === "bridge" && ui.view !== "home") { ban.className = "banner bridge"; ban.textContent = "O servidor da 01V96 não responde. Confira a janela do servidor no PC."; }
+  else ban.className = "banner hidden";
+  const sec = { home: "v-home", send: "v-send", fx: "v-fx" }[ui.view] || "v-ch";
+  for (const id of ["v-home", "v-ch", "v-send", "v-fx"]) $("#" + id).classList.toggle("hidden", id !== sec);
+  renderToolbar();
+  renderBlocks();
+  if (ui.view === "home") { renderDetails(); renderOverview(); }
+  else if (ui.view === "send") renderSend();
+  else if (ui.view === "fx") renderFx(cs);
+  else renderCh(cs);
+}
+
+function renderToolbar() {
+  const buses = fxBuses();
+  const t = ui.view !== "home" && ui.view !== "fx" ? selTrack() : null;
+  const s = [ui.view, ui.fxBus, buses.map(b => b.num + b.name).join(","), t ? t.num + t.name + t.color : ""].join("#");
+  if (s !== sig.tb) {
+    sig.tb = s;
+    if (t) {
+      const ni = nameInfo(t);
+      $("#tleft").innerHTML = `<div class="ctile" style="--tc:${tcolor(t.color).c}"><button data-chstep="-1" aria-label="Canal anterior">‹</button>
+        <div class="cm"><span class="cnum">${esc(ni.cn)}</span><span class="cnn">${esc(ni.nn)}</span>${ICON.mic}</div><button data-chstep="1" aria-label="Próximo canal">›</button></div>`;
+    } else {
+      $("#tleft").innerHTML = `<div class="scene"><div class="sw"><div class="sl">SCENE</div><div class="sb" data-pos>--</div></div></div>`;
+    }
+    const tab = (v, label, cls = "") => `<button class="tab ${cls}${ui.view === v ? " lit" : ""}" data-view="${v}">${WM[v]}<span>${label}</span></button>`;
+    $("#tabs").innerHTML = tab("home", "HOME", "home") + tab("input", "INPUT") + tab("eq", "EQ") + tab("gate", "GATE") + tab("comp", "COMP") + tab("send", "SEND TO") + tab("fx", "FX", "fxtab");
+    $("#edits").innerHTML = buses.filter(b => FX_NAME_RE.test(b.name)).map(b => `<div><span class="pill">${esc(b.name)}</span><button data-edit="${b.num}" class="${ui.view === "fx" && ui.fxBus === String(b.num) ? "lit" : ""}">EDIT</button></div>`).join("");
+  }
+  for (const el of $$("[data-pos]")) { const p = transport.pos || "--"; if (el.textContent !== p) el.textContent = p; }
+  $$('[data-act="play"]').forEach(el => el.classList.toggle("lit", transport.state === 1 || transport.state === 5));
+}
+
+function renderBlocks() {
+  const box = $("#blocks"), list = chans(), buses = fxBuses();
+  const nb = Math.ceil(list.length / BLOCK);
+  const s = list.map(t => t.num).join(",") + "|" + buses.map(b => b.num).join(",") + "|" + (master ? 1 : 0) + "|" + box.clientWidth;
+  if (s !== sig.blocks) {
+    sig.blocks = s;
+    box.querySelectorAll(".blk").forEach(x => x.remove());
+    let html = "";
+    for (let b = 0; b < nb; b++) {
+      const part = list.slice(b * BLOCK, b * BLOCK + BLOCK);
+      html += `<button class="blk" data-blk="${b}"><span class="bars">${part.map(t => `<i data-t="${t.num}"><b></b><u></u></i>`).join("")}</span><span class="bl">${esc(nameInfo(part[0]).cn.toLowerCase().replace(" ", ""))}</span></button>`;
+    }
+    if (buses.length) html += `<button class="blk" data-edit="${buses[0].num}"><span class="bars">${buses.map(t => `<i data-t="${t.num}"><b></b><u></u></i>`).join("")}</span><span class="bl">FX</span></button>`;
+    if (master) html += `<button class="blk" data-view="home"><span class="bars"><i data-t="0"><b></b><u></u></i><i data-t="0"><b></b><u></u></i></span><span class="bl">Stereo</span></button>`;
+    box.insertAdjacentHTML("beforeend", html);
+    box._hlKey = "";
+  }
+  const dest = ui.dest ? trackByNum(+ui.dest) : null;
+  for (const i of box.querySelectorAll("i[data-t]")) {
+    const t = trackByNum(+i.dataset.t); if (!t) continue;
+    const l = meterPos(t.peak / 10);
+    if (Math.abs((i._l ?? -1) - l) > 0.004) { i._l = l; i.style.setProperty("--l", l.toFixed(3)); }
+    let lvl = t.vol, snd = false;
+    if (dest && isChannel(t.name)) { const s2 = sendTo(t, dest.num); lvl = s2 ? s2.vol : 0; snd = !!s2; }
+    const f = volToPos(lvl);
+    if (Math.abs((i._f ?? -1) - f) > 0.002) { i._f = f; i.style.setProperty("--f", f.toFixed(3)); i.querySelector("u").classList.toggle("z", Math.abs(f - ZERO_POS) < 0.004); }
+    const off = !!(t.flags & 8); if (i._off !== off) { i._off = off; i.classList.toggle("off", off); }
+    if (i._snd !== snd) { i._snd = snd; i.classList.toggle("snd", snd); i.style.setProperty("--sc", dest ? tcolor(dest.color).c : ""); }
+  }
+  const hk = ui.start + "|" + nStrips + "|" + sig.blocks + "|" + ui.view;
+  if (box._hlKey !== hk) {
+    box._hlKey = hk;
+    const bars = [...box.querySelectorAll(".blk[data-blk] i[data-t]")];
+    const a = bars[ui.start], z = bars[Math.min(bars.length - 1, ui.start + nStrips - 1)], hl = $("#hl");
+    if (a && z && ui.view === "home") {
+      const br = box.getBoundingClientRect(), ab = a.closest(".blk"), zb = z.closest(".blk");
+      const full = ab === zb && nStrips >= BLOCK;
+      const left = (full ? ab.getBoundingClientRect().left : a.getBoundingClientRect().left - 4) - br.left;
+      const right = (full ? zb.getBoundingClientRect().right : z.getBoundingClientRect().right + 4) - br.left;
+      hl.style.left = left + "px"; hl.style.width = (right - left) + "px"; hl.style.display = "";
+    } else hl.style.display = "none";
+  }
+}
+
+// ---------- HOME ----------
+function renderDetails() {
+  const box = $("#details"), list = chans(), phone = innerWidth < 600;
+  const avail = $("#v-home").clientWidth - $("#v-home .overview").offsetWidth - (phone ? 4 : 8);
+  nStrips = clamp(Math.floor((avail + 2) / (phone ? 66 : 96.5)), 1, 8);
+  if (tracks.length) ui.start = clamp(ui.start, 0, Math.max(0, list.length - nStrips));
+  const dest = ui.dest ? trackByNum(+ui.dest) : null;
+  if (ui.dest && !dest && tracks.length) ui.dest = "";
+  const items = list.slice(ui.start, ui.start + nStrips).map(t => {
+    const s = dest ? sendTo(t, dest.num) : null;
+    return { t, o: { send: s, dis: !!dest && !s } };
+  });
+  const s = [nStrips, ui.start, ui.dest, ui.proc, innerHeight > 560, items.map(({ t, o }) => t.num + t.name + t.color + (o.send ? "s" + o.send.y : "") + (o.dis ? "d" : "") + ":" + fxSendsOf(t).map(x => x.y + "." + x.other).join(",")).join("|")].join("#");
+  if (s !== sig.details) {
+    sig.details = s;
+    box.innerHTML = items.length ? items.map(({ t, o }) => stripHTML(t, o)).join("") : `<div class="chmsg">Esperando a 01V96…</div>`;
+  }
+  for (const { t, o } of items) updateStrip(box.querySelector(`.st[data-row="${t.num}"]`), t, o);
+}
+function renderOverview() {
+  const dests = fxBuses(), dest = ui.dest ? trackByNum(+ui.dest) : null, ost = dest || master;
+  const s = [ui.dest, dests.map(d => d.num + d.name + d.color).join(","), ost ? ost.num + ost.name : "", innerHeight > 560].join("#");
+  if (s !== sig.over) {
+    sig.over = s;
+    $("#dests").innerHTML = `<div class="hd">SEND</div>` + dests.map(d => { const c = tcolor(d.color);
+      return `<button data-dest="${d.num}" class="${ui.dest === String(d.num) ? "sel" : ""}" style="--tc:${c.c};--ti:${c.i}">${esc(d.name)}</button>`; }).join("") +
+      (ui.dest ? `<button class="exit" data-dest="">Exit</button>` : "");
+    $("#ostrip").innerHTML = ost ? stripHTML(ost, { master: ost === master, blankProc: true, noSel: true }) : "";
+  }
+  if (ost) updateStrip($("#ostrip .st"), ost, { master: ost === master, noSel: true });
+}
+
+// ---------- telas de canal (INPUT / EQ / GATE / COMP) ----------
+const CH_VIEWS = { input: "INPUT", eq: "EQ", gate: "GATE", comp: "COMP", send: "SEND TO" };
+const isChView = v => v in CH_VIEWS;
+const PLUG_RE = { eq: /eq/i, gate: /gate/i, comp: /comp/i };
+const PLUG_HINT = { eq: "EQ", gate: "gate", comp: "compressor" };
+const pByName = (f, n) => f.params.find(p => p.name.toLowerCase() === n.toLowerCase());
+const pFind = (f, re) => f.params.find(p => re.test(p.name));
+const isSM = f => /supermassive/i.test(f.name);
+const fxShort = n => n.replace(/^(VST3?|JS|CLAP|AU|DX)i?:\s*/, "").replace(/\s*\(.*\)\s*$/, "");
+const fmtKey = (f, p) => `p.${f.t}.${f.f}.${p.i}`;
+function curFx() { return fxState.fx.find(f => String(f.t) === ui.fxBus) || null; }
+function paramByKey(key) { const [, t, f, i] = key.split(".").map(Number); const fx = fxState.fx.concat(chanFx).find(x => x.t === t && x.f === f); return fx && fx.params.find(p => p.i === i); }
+function chPlugin(view, t) { return chanFx.find(f => f.t === t.num && PLUG_RE[view].test(fxShort(f.name))); }
+function numOf(fmt) { const str = String(fmt || ""), m = /[-+]?\d+(?:[.,]\d+)?/.exec(str); if (!m) return /inf/i.test(str) ? (/-\s*inf/i.test(str) ? -Infinity : Infinity) : NaN; let v = +m[0].replace(",", "."); if (/\d\s*k/i.test(str)) v *= 1000; return v; }
+function selectBand(k) { if (ui.eqBand === k) return; ui.eqBand = k; saveUi(); sig.chk = ""; $$("#v-ch .eqh").forEach(h => h.classList.toggle("sel", +h.dataset.band === k)); render(); }
+// texto de um parâmetro como no StageMix: "-inf" vira "-∞", razão do compressor com ":1", Hz/dB no EQ
+function dispFmt(p) {
+  const s = p.fmt;
+  if (/^ratio/i.test(p.name)) return /inf/i.test(s) ? "∞:1" : /^\s*[\d.]+\s*$/.test(s) ? s.trim() + ":1" : s;
+  return s.replace(/^\s*-\s*inf\s*$/i, "-∞");
+}
+const unitTxt = (u, v) => !isFinite(v) ? (v < 0 ? "-∞" : "∞") : u === "hz" ? (v >= 1000 ? (v / 1000).toFixed(v >= 9995 ? 1 : 2) + "kHz" : Math.round(v) + "Hz")
+  : (v > 0.04 ? "+" : "") + (Math.abs(v) < 0.05 ? 0 : v).toFixed(1) + "dB";
+const fmtLike = (fmt, v) => { const m = /\.(\d+)/.exec(String(fmt)); return v.toFixed(m ? m[1].length : 0); };
+function syncParams(box, f) {
+  for (const p of f.params) {
+    const key = fmtKey(f, p);
+    for (const ctl of box.querySelectorAll(`.ctl[data-key="${key}"]`)) {
+      if (p.opts && !ctl._opts) ctl._opts = p.opts;
+      const showLocal = ctl.dataset.n && ctl.dataset.k !== "val" && (ctl._drag || held(key)) && p.opts;
+      const lv = valLocal[key] !== undefined && held(key) ? valLocal[key] : undefined, sc = SCALES[ctl.dataset.sc];
+      for (const out of ctl.querySelectorAll(`[data-fmt="${key}"]`)) {
+        const txt = showLocal ? p.opts[Math.round((ctl._pos ?? 0) * (p.opts.length - 1))]
+          : out.dataset.u ? unitTxt(out.dataset.u, lv ?? numOf(p.fmt)) : sc ? valTxt(p, lv ?? numOf(p.fmt), sc) : lv !== undefined ? fmtLike(p.fmt, lv) : dispFmt(p);
+        if (out.textContent !== txt) out.textContent = txt;
+      }
+      syncCtl(ctl, sc ? scPos(sc, numOf(p.fmt)) : p.v);
+    }
+  }
+}
+function syncEnable(box, f) {
+  const b = box.querySelector("[data-bypass]"), k = `b.${f.t}.${f.f}`;
+  if (b && !held(k)) { b._on = f.enabled; b.classList.toggle("lit", b.classList.contains("tpill") ? f.enabled : !f.enabled); }
+  box.querySelector(".vsm, .vgen")?.classList.toggle("off", !(held(k) && b ? b._on : f.enabled));
+}
+// ----- EQ -----
+const RTA_F = Array.from({ length: 61 }, (_, k) => 20 * Math.pow(2, k / 6));   // centro das bandas do RTA (1/6 de oitava, igual ao StageMix)
+const RTA_MIN = -80, RTA_MAX = 0;   // nível da banda (dB) no pé e no topo do gráfico
+const REAEQ_TYPES = { 0: "ls", 1: "hs", 2: "pk", 3: "lp", 4: "hp", 5: "ap", 6: "no", 7: "bp", 8: "pk", 9: "pk", 10: "bp" };   // BANDTYPEx do ReaEQ
+function eqBands(f) {
+  const map = new Map();
+  for (const p of f.params) {
+    const m = /^(freq(?:uency)?|gain|q|bw|bandwidth)[\s\-:_]*(.*)$/i.exec(p.name);
+    if (!m) continue;
+    const kind = /^f/i.test(m[1]) ? "freq" : /^g/i.test(m[1]) ? "gain" : "q";
+    const label = (m[2] || "Band").trim();
+    if (!map.has(label)) map.set(label, { label });
+    const b = map.get(label); b[kind] = p; if (kind === "q") b.bw = /^b/i.test(m[1]);
+  }
+  return [...map.values()].filter(b => b.freq).map((b, i) => {
+    const code = f.btype ? f.btype[i] : "";
+    b.type = code !== "" && code !== undefined && REAEQ_TYPES[+code] ? REAEQ_TYPES[+code] : bandType(b.label);
+    b.on = !f.bon || f.bon[i] !== false;
+    return b;
+  });
+}
+function bandType(label) {
+  if (/low\s*shelf/i.test(label)) return "ls"; if (/high\s*shelf/i.test(label)) return "hs";
+  if (/high\s*pass|hpf|low\s*cut/i.test(label)) return "hp"; if (/low\s*pass|lpf|high\s*cut/i.test(label)) return "lp";
+  if (/notch/i.test(label)) return "no"; if (/band\s*pass/i.test(label)) return "bp"; if (/all\s*pass/i.test(label)) return "ap";
+  return "pk";
+}
+const isFilt = t => t === "hp" || t === "lp";
+const hasGain = t => t === "pk" || t === "ls" || t === "hs";
+function bandShorts(bands) {   // L / LM / HM / H como no StageMix; filtros viram HPF / LPF
+  const norm = bands.filter(b => !isFilt(b.type));
+  const BS = { low: "L", lowmid: "LM", himid: "HM", high: "H" };   // 01V96: bandas Low / LowMid / HiMid / High
+  return bands.map((b, i) => b.type === "hp" ? "HPF" : b.type === "lp" ? "LPF" : BS[b.label.toLowerCase()] || (norm.length === 4 ? ["L", "LM", "HM", "H"][norm.indexOf(b)] : String(i + 1)));
+}
+const pval = (f, p) => { if (!p) return NaN; const k = fmtKey(f, p), lv = valLocal[k]; return lv !== undefined && held(k) ? lv : numOf(p.fmt); };
+function bandVals(f, b) {
+  const hz = clamp(pval(f, b.freq) || 1000, 10, 24000), g = b.gain ? pval(f, b.gain) : 0;
+  let q = b.q ? pval(f, b.q) : 0.71, bw = null;
+  if (b.q && (b.bw || /oct/i.test(b.q.fmt))) { bw = q > 0 ? q : 1; q = 1 / (2 * Math.sinh(Math.LN2 / 2 * bw)); }
+  if (!isFinite(q) || q <= 0) q = 0.71;
+  return { t: b.type, on: b.on, hz, g: g === -Infinity ? -30 : isFinite(g) ? clamp(g, -30, 30) : 0, q, bw };
+}
+// coeficientes RBJ (os mesmos filtros do ReaEQ); largura em oitavas quando o plugin usa BW
+function bqCoef(v, fs) {
+  if (!v.on || v.t === "ap") return null;
+  const A = Math.pow(10, v.g / 40), w0 = 2 * Math.PI * Math.min(v.hz, fs * 0.49) / fs, cw = Math.cos(w0), sw = Math.sin(w0);
+  const al = v.bw !== null ? sw * Math.sinh(Math.LN2 / 2 * v.bw * w0 / sw) : sw / (2 * v.q);
+  let b0, b1, b2, a0, a1, a2;
+  if (v.t === "pk") { b0 = 1 + al * A; b1 = -2 * cw; b2 = 1 - al * A; a0 = 1 + al / A; a1 = -2 * cw; a2 = 1 - al / A; }
+  else if (v.t === "ls") { const k = 2 * Math.sqrt(A) * al; b0 = A * ((A + 1) - (A - 1) * cw + k); b1 = 2 * A * ((A - 1) - (A + 1) * cw); b2 = A * ((A + 1) - (A - 1) * cw - k); a0 = (A + 1) + (A - 1) * cw + k; a1 = -2 * ((A - 1) + (A + 1) * cw); a2 = (A + 1) + (A - 1) * cw - k; }
+  else if (v.t === "hs") { const k = 2 * Math.sqrt(A) * al; b0 = A * ((A + 1) + (A - 1) * cw + k); b1 = -2 * A * ((A - 1) + (A + 1) * cw); b2 = A * ((A + 1) + (A - 1) * cw - k); a0 = (A + 1) - (A - 1) * cw + k; a1 = 2 * ((A - 1) - (A + 1) * cw); a2 = (A + 1) - (A - 1) * cw - k; }
+  else if (v.t === "hp") { b0 = (1 + cw) / 2; b1 = -(1 + cw); b2 = (1 + cw) / 2; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; }
+  else if (v.t === "lp") { b0 = (1 - cw) / 2; b1 = 1 - cw; b2 = (1 - cw) / 2; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; }
+  else if (v.t === "no") { b0 = 1; b1 = -2 * cw; b2 = 1; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; }
+  else { b0 = al; b1 = 0; b2 = -al; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; }
+  return [b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0];
+}
+function bqDb(c, f, fs) {
+  const w = 2 * Math.PI * f / fs, c1 = Math.cos(w), s1 = Math.sin(w), c2 = Math.cos(2 * w), s2 = Math.sin(2 * w);
+  const nr = c[0] + c[1] * c1 + c[2] * c2, ni = -(c[1] * s1 + c[2] * s2), dr = 1 + c[3] * c1 + c[4] * c2, di = -(c[3] * s1 + c[4] * s2);
+  return 10 * Math.log10((nr * nr + ni * ni) / (dr * dr + di * di));
+}
+function eqModel(f) {
+  const bands = eqBands(f), fs = ana.sr || 48000, vals = bands.map(b => bandVals(f, b));
+  const gg = pFind(f, /^global\s*gain/i), gdb = gg ? pval(f, gg) : 0;
+  return { bands, vals, fs, coefs: vals.map(v => bqCoef(v, fs)), global: isFinite(gdb) ? gdb : 0 };
+}
+const eqAt = (m, hz) => { let db = m.global; for (const c of m.coefs) if (c) db += bqDb(c, hz, m.fs); return db; };
+// quanto o EQ muda o nível do sinal: espectro que entra no canal × curva do EQ
+function eqDelta(m, spec) {
+  if (!spec) return null;
+  let num = 0, den = 0;
+  for (let k = 0; k < 61; k++) { const p = Math.pow(10, spec[k] / 10); num += p * Math.pow(10, eqAt(m, RTA_F[k]) / 10); den += p; }
+  return den > 1e-13 ? 10 * Math.log10(num / den) : m.global;
+}
+const LF = Math.log10(20), HF = Math.log10(20000), EQ_RANGE = 20;
+const PADL = 44, PADB = 34;   // espaço dos rótulos (dB à esquerda, Hz embaixo)
+const gx = (hz, W) => PADL + (W - PADL) * (Math.log10(hz) - LF) / (HF - LF);
+const gy = (db, H) => (H - PADB) / 2 - db * ((H - PADB) / 2 - 8) / EQ_RANGE;
+let gW = 0, gH = 0;
+function eqGridSVG(W, H) {   // lo = linhas pontilhadas (ficam atrás do RTA), hi = linhas cheias e números
+  let lo = "", hi = "";
+  for (const hz of [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]) {
+    const x = gx(hz, W).toFixed(1), main = [100, 1000, 10000].includes(hz), ln = `<line class="${main ? "gls" : "gl"}" x1="${x}" y1="0" x2="${x}" y2="${H - PADB}"/>`;
+    if (main) hi += ln; else lo += ln;
+    hi += `<text class="xlab" x="${x}" y="${H - 6}">${hz >= 1000 ? hz / 1000 + "k" : hz}</text>`;
+  }
+  for (const db of [20, 15, 10, 5, 0, -5, -10, -15, -20]) {
+    const y = gy(db, H).toFixed(1), cls = db === 0 ? "" : Math.abs(db) === 10 ? "gls" : "gl", ln = `<line class="${cls}" x1="${PADL}" y1="${y}" x2="${W}" y2="${y}"/>`;
+    if (cls === "gl") lo += ln; else hi += ln;
+    hi += `<text class="ylab${db === 0 ? " z" : ""}" x="${PADL - 8}" y="${y}">${Math.abs(db)}</text>`;
+  }
+  return { lo, hi };
+}
+function eqCurve(m, W, H) {
+  const pts = [];
+  for (let i = 0; i <= 160; i++) {
+    const hz = Math.pow(10, LF + (HF - LF) * i / 160);
+    pts.push(`${gx(hz, W).toFixed(1)},${clamp(gy(eqAt(m, hz), H), 0, H - PADB).toFixed(1)}`);
+  }
+  const y0 = gy(0, H).toFixed(1);
+  return { line: "M" + pts.join("L"), fill: `M${PADL},${y0}L${pts.join("L")}L${W},${y0}Z` };
+}
+// barras do RTA (cinza, do pé do gráfico pra cima) ou marcas de pico (vermelhas)
+function rtaPathD(spec, W, H, peak) {
+  const yb = gy(-EQ_RANGE, H), yt = gy(EQ_RANGE, H), bw = (W - PADL) * Math.log10(2) / 6 / (HF - LF) * 0.8;
+  let d = "";
+  for (let k = 0; k < 61; k++) {
+    const xc = gx(RTA_F[k], W), xa = Math.max(PADL, xc - bw / 2), xb = Math.min(W, xc + bw / 2);
+    const fr = clamp((spec[k] - RTA_MIN) / (RTA_MAX - RTA_MIN));
+    if (xb - xa < 1 || fr < 0.004) continue;
+    const y = yb - fr * (yb - yt);
+    d += peak ? `M${xa.toFixed(1)},${(y - 1.5).toFixed(1)}h${(xb - xa).toFixed(1)}v3h${(xa - xb).toFixed(1)}Z`
+      : `M${xa.toFixed(1)},${yb.toFixed(1)}V${y.toFixed(1)}H${xb.toFixed(1)}V${yb.toFixed(1)}Z`;
+  }
+  return d;
+}
+
+// ----- GATE / COMP -----
+const dbLin = db => isFinite(db) ? Math.pow(10, db / 20) : db > 0 ? 1e6 : 0;
+const linDb = v => v > 1e-8 ? 20 * Math.log10(v) : -160;
+// ganho final de um plugin de dinâmica para um ganho de processamento (dB), com Wet/Dry do plugin e o mix do REAPER
+function dynMix(f) {
+  const wets = f.params.filter(p => /^wet$/i.test(p.name)), dry = pFind(f, /^dry$/i);
+  const own = wets.length > 1 || (wets[0] && /^\s*[+-]|inf/i.test(wets[0].fmt)) ? wets[0] : null;
+  const mixP = wets.length > 1 ? wets[wets.length - 1] : null;
+  const w = own ? dbLin(numOf(own.fmt)) : 1, dr = dry ? dbLin(numOf(dry.fmt)) : 0, mix = mixP && isFinite(numOf(mixP.fmt)) ? clamp(numOf(mixP.fmt) / 100) : 1;
+  return gdb => linDb(mix * (w * dbLin(gdb) + dr) + (1 - mix));
+}
+function dynCurve(kind, f) {
+  const thrP = pFind(f, /^thresh/i), ratioP = pFind(f, /^ratio/i), kneeP = pFind(f, /^knee/i), rangeP = pFind(f, /^range$/i);
+  const thr = thrP && isFinite(numOf(thrP.fmt)) ? clamp(numOf(thrP.fmt), -90, 18) : -20;
+  const ratio = !ratioP ? 4 : /inf|∞/i.test(ratioP.fmt) ? Infinity : Math.max(1, numOf(ratioP.fmt) || 1);
+  const knee = kneeP ? Math.max(0, numOf(kneeP.fmt) || 0) : 0, range = rangeP ? numOf(rangeP.fmt) : -Infinity, mix = dynMix(f), r = 1 / ratio;
+  const out = inp => {
+    let g = 0;
+    if (kind === "gate") g = inp < thr ? range : 0;   // ReaGate: fechado = só o Dry (é o "Range" do StageMix)
+    else if (inp >= thr + knee / 2 || (knee <= 0 && inp >= thr)) g = (thr - inp) * (1 - r);
+    else if (inp > thr - knee / 2) { const d = inp - thr + knee / 2; g = (r - 1) * d * d / (2 * knee); }
+    return inp + mix(g);
+  };
+  return { thr, ratio, out };
+}
+function dynGraph(kind, f, W, H) {
+  const X = db => (db + 60) / 78 * W, Y = db => H - (db + 60) / 78 * H;
+  const c = dynCurve(kind, f), pts = [];
+  for (let i = 0; i <= 156; i++) { const inp = -60 + 78 * i / 156; pts.push(`${X(inp).toFixed(1)},${Y(clamp(c.out(inp), -60, 18)).toFixed(1)}`); }
+  return { c, X, Y, line: "M" + pts.join("L"), fill: `M${X(-60)},${Y(-60)}L${pts.join("L")}L${X(18)},${Y(-60)}Z` };
+}
+function dynGridSVG(W, H) {   // números proporcionais ao tamanho do gráfico, sem encavalar
+  const X = db => (db + 60) / 78 * W, Y = db => H - (db + 60) / 78 * H, fs = clamp(Math.round(W / 15), 10, 17);
+  let g = "";
+  for (const db of [-60, -40, -20, 0, 18]) {
+    g += `<line class="${db === 0 ? "gls" : "gl"}" x1="${X(db)}" y1="0" x2="${X(db)}" y2="${H}"/><line class="${db === 0 ? "gls" : "gl"}" x1="0" y1="${Y(db)}" x2="${W}" y2="${Y(db)}"/>`;
+    if (db !== 18) g += `<text x="${X(db) + 4}" y="${H - 6}">${db}</text>`;
+    if (db !== -60 || H >= 220) g += `<text x="10" y="${(Y(db) + (db === 18 ? fs : db === -60 ? -fs * 1.5 : fs * 0.35)).toFixed(1)}">${db === 18 ? "+18" : db}</text>`;
+  }
+  g += `<text x="${W - 3}" y="${H - 6}" text-anchor="end">+18</text>`;
+  return `<g style="font-size:${fs}px">${g}</g><path class="ax" d="M0,0 V${H} H${W}"/>`;
+}
+const numCtl = p => !p.opts && !isNaN(numOf(p.fmt));   // dá pra ajustar pelo número que o plugin mostra
+const DYN = {   // [parâmetro do plugin, nome no StageMix, escala do slider]
+  gate: { vL: [/^thresh/i, "Thresh", "gthr"], vR: [/^(range|dry)$/i, "Range", "grng"], h: [[/^attack/i, "Attack", "att"], [/^hold/i, "Hold", "hold"], [/^release/i, "Decay", "rel"]] },
+  comp: { vL: [/^thresh/i, "Thresh", "cthr"], vR: [/^ratio/i, "Ratio", "ratio"], h: [[/^attack/i, "Attack", "att"], [/^release/i, "Release", "rel"], [/^wet$/i, "Out Gain", "gain"], [/^knee/i, "Knee", "knee"]] },
+};
+
+// ----- níveis em cada ponto da cadeia do canal -----
+// O analisador mede antes e depois de todos os plugins; ReaGate/ReaComp informam a redução de ganho e o EQ
+// é calculado pela curva sobre o espectro que entra. Daí sai a entrada e a saída de cada plugin.
+const isGateFx = f => /gate/i.test(fxShort(f.name));
+const isCompFx = f => !isGateFx(f) && /comp/i.test(fxShort(f.name));
+const isEqFx = f => /eq/i.test(fxShort(f.name));
+function fxGain(f, spec) {
+  if (!f.enabled) return { db: 0, exact: true };
+  const g = grOf(f);
+  if (isGateFx(f) || isCompFx(f)) return g === undefined ? null : { db: dynMix(f)(-g), exact: true, big: g > 30 };
+  if (isEqFx(f) && eqBands(f).length) { const d = eqDelta(eqModel(f), spec); return d === null ? null : { db: d, exact: false }; }
+  return null;
+}
+function walkLevels([pre, post], gains) {   // do começo pra frente e do fim pra trás, ficando com o caminho exato
+  const n = gains.length, fw = [{ db: pre, exact: true }], bk = [], lv = [];
+  for (let j = 0; j < n; j++) fw[j + 1] = fw[j] && gains[j] ? { db: fw[j].db + gains[j].db, exact: fw[j].exact && gains[j].exact } : null;
+  bk[n] = { db: post, exact: true, safe: post > -100 };
+  for (let j = n - 1; j >= 0; j--) bk[j] = bk[j + 1] && gains[j] ? { db: bk[j + 1].db - gains[j].db, exact: bk[j + 1].exact && gains[j].exact, safe: bk[j + 1].safe && !gains[j].big } : null;
+  for (let j = 0; j <= n; j++) {
+    const a = fw[j], b = bk[j];
+    lv[j] = j === 0 ? pre : j === n ? post : a && a.exact ? a.db : b && b.exact && b.safe ? b.db : a ? a.db : b ? b.db : null;
+  }
+  return lv;
+}
+function chainLevels(t) {   // lv = nível agora (barra), lvx = pico exato dos últimos 300 ms (número e OVER)
+  const m = chanMeter[t.num];
+  if (!m || !m.pk || ana.status !== "ok") return null;
+  const list = chanFx.filter(f => f.t === t.num).sort((a, b) => a.f - b.f), gains = list.map(f => fxGain(f, m.pre));
+  return { list, lv: walkLevels(m.pk, gains), lvx: walkLevels(m.mx || m.pk, gains) };
+}
+function fxLevels(t, f) {   // entrada, saída e redução de ganho de um plugin
+  const L = chainLevels(t), j = L ? L.list.indexOf(f) : -1;
+  if (j < 0) return { inp: null, out: null, gr: null, inpx: null, outx: null };
+  const g = grOf(f), inp = L.lv[j], out = L.lv[j + 1];
+  const gr = !f.enabled ? 0 : g !== undefined ? g : inp !== null && out !== null ? Math.max(0, inp - out) : null;
+  return { inp, out, gr, inpx: L.lvx[j], outx: L.lvx[j + 1] };
+}
+function setLvl(m, db, dbx) {
+  if (m && dbx !== null && dbx !== undefined && dbx >= -0.3) m._clip = Date.now();   // OVER pelo pico exato
+  updateMeter(m, db ?? -200, tfPos);
+}
+// número de pico embaixo do medidor: guarda o maior valor até tocar nele (como o número do medidor do REAPER)
+const pkHold = {};
+let pkCtx = "";
+function setPk(box, id, v, isGr) {
+  const el = box.querySelector(`[data-pkv="${id}"]`);
+  if (!el) return;
+  if (v !== null && v !== undefined && isFinite(v) && !(v <= (pkHold[id] ?? -Infinity))) pkHold[id] = v;
+  const h = pkHold[id];
+  const txt = h === undefined ? (isGr ? "0.0" : "-∞") : isGr ? h.toFixed(1) : h < -99.9 ? "-∞" : (h > 0.04 ? "+" : "") + (Math.abs(h) < 0.05 ? 0 : h).toFixed(1);
+  if (el.textContent !== txt) el.textContent = txt;
+  const over = !isGr && h !== undefined && h >= -0.3;
+  if (el._over !== over) { el._over = over; el.classList.toggle("over", over); }
+}
+function setGr(m, gr) {
+  if (!m) return;
+  const g = gr === null || gr === undefined ? 0 : 1 - tfPos(-gr);
+  if (m._g === undefined || Math.abs(m._g - g) > 0.003) { m._g = g; m.style.setProperty("--g", g.toFixed(3)); }
+}
+
+// ----- montagem das telas -----
+const VM_SCALE = `<div class="vs2">${[3, 6, 12, 20, 30, 60].map(v => `<span class="s${v}" style="top:${((1 - tfPos(-v)) * 100).toFixed(1)}%">${v}</span>`).join("")}</div>`;
+const vmHTML = (id, cls = "", scale = true) => `<div class="vm${cls ? " " + cls : ""}" id="${id}">${cls === "thr" ? `<i class="thm none"></i>` : ""}<div class="bar">${cls === "gr" ? "<i></i>" : "<b></b>"}</div>${scale ? VM_SCALE : ""}</div>`;
+const pkvHTML = id => `<button class="pkv" data-pkv="${id}" aria-label="Pico. Toque pra zerar">-∞</button>`;
+const meterCol = (top, id, cls = "", vcls = "") => `<div class="mcol ${cls}">${top}${vmHTML(id, vcls)}${pkvHTML(id)}</div>`;
+const grOutHTML = () => `<div class="mpair"><div class="mcol"><div class="ml">GR</div><div class="mo"></div>${vmHTML("grm", "gr")}${pkvHTML("grm")}</div>
+  <div class="mcol"><div class="ml">OUT</div><div class="mo">OVER</div>${vmHTML("outm", "", false)}${pkvHTML("outm")}</div></div>`;
+const scAttr = sc => sc ? `data-k="val" data-sc="${sc}"${SCALES[sc].list ? ` data-n="${SCALES[sc].list.length}"` : ""}` : `data-k="param"`;
+const vslHTML = (key, label, sc) => `<div class="vcol ctl" ${scAttr(sc)} data-axis="y" data-key="${key}"><div class="vl">${esc(label)}</div><div class="vv" data-fmt="${key}"></div><div class="vsl"><i></i><u></u></div></div>`;
+const hslHTML = (key, label, sc) => `<div class="hsl ctl" ${scAttr(sc)} data-axis="x" data-key="${key}"><div class="hl2"><span>${esc(label)}</span><b data-fmt="${key}"></b></div><div class="tr2"><i></i><u></u></div></div>`;
+const hslNativeHTML = (k, t, label) => `<div class="hsl ctl" data-k="${k}" data-axis="x" data-key="${k === "pan" ? "pan" : "wid"}${t.num}" data-t="${t.num}"><div class="hl2"><span>${esc(label)}</span><b data-out="1"></b></div><div class="tr2"><i></i><u></u></div></div>`;
+const rpHTML = t => `<div class="rp"><button class="back" aria-label="Voltar"><svg viewBox="0 0 34 30"><path d="M12 4L4 11l8 7"/><path d="M4 11h20a6 6 0 0 1 0 12H10"/></svg></button>${stripHTML(t, { noProc: true, noName: true, noSel: true })}</div>`;
+function phoneSel(t) {
+  const ni = nameInfo(t);
+  return `<div class="phsel"><button data-chstep="-1" aria-label="Canal anterior">‹</button><div class="pp2" style="--tc:${tcolor(t.color).c}"><span>${esc(ni.cn)}</span><b>${esc(ni.nn)}</b></div><button data-chstep="1" aria-label="Próximo canal">›</button></div>`;
+}
+function chPanelHTML(t, f, view, cs) {
+  if (view === "input") {
+    return `<div class="inw"><div class="inl">
+      <div class="wave"><i style="height:38%"></i><i style="height:62%"></i><i style="height:100%"></i><i style="height:62%"></i><i style="height:38%"></i></div>
+      <button class="pill2" data-phase="${t.num}" aria-label="Inverter fase">Φ</button>
+      ${hslNativeHTML("pan", t, "Pan")}
+      </div><div class="insep"></div><div class="inr">${meterCol(`<div class="mo">OVER</div>`, "bigm")}</div></div>`;
+  }
+  const fresh = Date.now() - chanAt < 4000;
+  if (!fresh) return `<div class="chmsg">${cs === "bridge" ? "A ponte dos plugins não está respondendo." : "Carregando EQ, GATE e COMP da mesa…"}</div>`;
+  if (!chanTracks.has(t.num)) return `<div class="chmsg">Carregando os plugins do canal…</div>`;
+  if (view === "eq") {   // o RTA funciona em qualquer canal; a curva só com ReaEQ
+    const note = !f ? "Canal sem EQ" : !eqBands(f).length ? `${esc(fxShort(f.name))}: a curva só aparece com o ReaEQ` : "";
+    return `<div class="eqw"><div class="chg"><svg id="chsvg"></svg>${note ? `<div class="eqnote">${note} · o RTA mostra o som do canal</div>` : ""}</div></div>${meterCol(`<button class="rtah" data-rtahold="1" disabled><small>RTA</small><b>HOLD</b></button><div class="ml">OUT</div><div class="mo">OVER</div>`, "outm", "outm")}`;
+  }
+  if (!f) return `<div class="chmsg"><b>${esc(nameInfo(t).cn)} ${esc(nameInfo(t).nn)}</b> não tem ${PLUG_HINT[view]}.</div>`;
+  const D = DYN[view], vL = pFind(f, D.vL[0]), vR = pFind(f, D.vR[0]);
+  return `<div class="dynw">
+    ${meterCol(`<div class="ml">IN</div><div class="mo">OVER</div>`, "inm", "", "thr")}
+    <div class="dynbox">
+      ${vL ? vslHTML(fmtKey(f, vL), D.vL[1], numCtl(vL) && D.vL[2]) : "<div></div>"}
+      <div class="dyng"><svg id="chsvg"></svg></div>
+      ${vR ? vslHTML(fmtKey(f, vR), D.vR[1], numCtl(vR) && D.vR[2]) : "<div></div>"}
+      <div class="hcol">${D.h.map(([re, l, sc]) => { const p = pFind(f, re); return p ? hslHTML(fmtKey(f, p), l, numCtl(p) && sc) : ""; }).join("")}</div>
+    </div>
+    ${grOutHTML()}
+  </div>`;
+}
+function chHeadHTML(t, f, view) {
+  const pill = view === "input" ? `<div class="tpill" style="background:none;box-shadow:none;padding-left:0">${WM.input}<span>INPUT</span></div>`
+    : `<button class="tpill${f && f.enabled ? " lit" : ""}" ${f ? `data-bypass="${f.t}.${f.f}"` : "disabled"}>${WM[view]}<span>${CH_VIEWS[view]}</span></button>`;
+  let bar = "";
+  if (f && (view === "eq" || view === "comp")) bar = `<div class="kbar"><div class="kp"><i>1</i>${esc(fxShort(f.name))}</div>${view === "eq" ? `<div class="ks"><svg viewBox="0 0 44 24" id="bshape"></svg><b></b></div>` : ""}</div>`;
+  return `<div class="ch-h">${pill}${bar}${phoneSel(t)}</div>`;
+}
+const SHAPES = { pk: "M2 18h12c4 0 4-12 8-12s4 12 8 12h12", ls: "M2 6h10c6 0 6 12 12 12h18", hs: "M2 18h18c6 0 6-12 12-12h10", hp: "M2 22c6-14 8-16 14-16h26", lp: "M2 6h26c6 0 8 2 14 16",
+  no: "M2 8h16c2 0 3 12 4 12s2-12 4-12h16", bp: "M2 22c8 0 12-16 20-16s12 16 20 16", ap: "M2 14h40" };
+function drawEq(box, t, f) {
+  const svg = box.querySelector("#chsvg");
+  if (!svg) return;
+  const r = svg.getBoundingClientRect(), W = Math.round(r.width), H = Math.round(r.height);
+  if (!W || !H) return;
+  const m = f ? eqModel(f) : { bands: [], vals: [], coefs: [], fs: ana.sr || 48000, global: 0 };
+  const shorts = bandShorts(m.bands), hk = m.bands.map(b => b.label + b.type + b.on).join(",");
+  if (!m.bands[ui.eqBand]?.on) { const k = m.bands.findIndex(b => b.on); if (k >= 0) ui.eqBand = k; }
+  if (W !== gW || H !== gH || svg._hk !== hk) {
+    gW = W; gH = H; svg._hk = hk;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const g = eqGridSVG(W, H);
+    svg.innerHTML = g.lo + `<path class="rta"/><path class="rtapk"/>` + g.hi + `<path class="cvf"/><path class="cv"/>` + m.bands.map((b, i) => b.on
+      ? `<g class="eqh${i === ui.eqBand ? " sel" : ""}" data-band="${i}" data-fk="${fmtKey(f, b.freq)}"${b.gain && hasGain(b.type) ? ` data-gk="${fmtKey(f, b.gain)}"` : ""}><circle r="17"/><text>${shorts[i]}</text></g>` : "").join("");
+    box.querySelector("#eqpop")?.remove();
+    box.querySelector(".chg").insertAdjacentHTML("beforeend", `<div class="eqpop" id="eqpop"></div>`);
+    sig.chk = "";
+  }
+  box.querySelector(".eqw")?.classList.toggle("eqoff", !f || !f.enabled);
+  const c = eqCurve(m, W, H);
+  svg.querySelector(".cv").setAttribute("d", c.line);
+  svg.querySelector(".cvf").setAttribute("d", c.fill);
+  // RTA: espectro do canal depois dos plugins (pré-fader)
+  const ms = chanMeter[t.num], spec = ana.status === "ok" && ms && ms.post;
+  if (spec && rtaHold) { if (!rtaPk || rtaPk._t !== t.num) { rtaPk = new Float32Array(61).fill(-200); rtaPk._t = t.num; } for (let k = 0; k < 61; k++) if (spec[k] > rtaPk[k]) rtaPk[k] = spec[k]; }
+  const rd = spec ? rtaPathD(spec, W, H) : "", pd = rtaHold && rtaPk && rtaPk._t === t.num ? rtaPathD(rtaPk, W, H, true) : "";
+  const rp = svg.querySelector(".rta"), rk = svg.querySelector(".rtapk");
+  if (rp._d !== rd) { rp._d = rd; rp.setAttribute("d", rd); }
+  if (rk._d !== pd) { rk._d = pd; rk.setAttribute("d", pd); }
+  const hb = box.querySelector(".rtah");
+  if (hb) { hb.disabled = !spec; hb.classList.toggle("lit", rtaHold && !!spec); }
+  let selXY = null;
+  svg.querySelectorAll(".eqh").forEach(h => {
+    const i = +h.dataset.band, v = m.vals[i]; if (!v) return;
+    const x = gx(v.hz, W), y = hasGain(v.t) ? clamp(gy(v.g, H), 0, H - PADB) : gy(0, H);
+    h.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+    h.classList.toggle("sel", i === ui.eqBand);
+    if (i === ui.eqBand) selXY = [x, y];
+  });
+  // caixinha azul com Freq / Gain / Q da banda escolhida (arraste cada linha pra cima/baixo)
+  const popEl = box.querySelector("#eqpop"), b = m.bands[clamp(ui.eqBand, 0, m.bands.length - 1)];
+  if (!popEl || !b) return;
+  const pk = "eq" + ui.eqBand + m.bands.length + b.type;
+  if (sig.chk !== pk) {
+    sig.chk = pk;
+    const row = (p, l, u) => p ? `<div class="er ctl" data-k="param" data-axis="y" data-key="${fmtKey(f, p)}"><span>${l}</span><b data-fmt="${fmtKey(f, p)}"${u ? ` data-u="${u}"` : ""}></b></div>` : "";
+    popEl.innerHTML = row(b.freq, "Freq", "hz") + (hasGain(b.type) ? row(b.gain, "Gain", "db") : "") + row(b.q, b.bw ? "BW" : "Q");
+    const sh = box.querySelector("#bshape"); if (sh) sh.innerHTML = `<path d="${SHAPES[b.type] || SHAPES.pk}"/>`;
+    syncParams(box, f);
+  }
+  if (selXY) {
+    const pw = popEl.offsetWidth, ph = popEl.offsetHeight;
+    let px = selXY[0] - pw / 2, py = selXY[1] - ph - 30;
+    if (py < 0) py = selXY[1] + 30;
+    popEl.style.left = clamp(px, PADL, W - pw) + "px"; popEl.style.top = clamp(py, 0, H - PADB - ph) + "px";
+  }
+}
+function drawEqNow() {
+  const box = $("#v-ch"), t = selTrack();
+  if (!t || ui.view !== "eq" || !box.querySelector("#chsvg")) return;
+  const f = chPlugin("eq", t);
+  drawEq(box, t, f);
+  if (f) syncParams(box, f);
+}
+function renderCh(cs) {
+  const box = $("#v-ch"), t = selTrack(), view = ui.view;
+  if (!t) { box.innerHTML = `<div class="chmsg">Esperando a 01V96…</div>`; sig.ch = ""; return; }
+  const f = view !== "input" ? chPlugin(view, t) : null;
+  const fresh = Date.now() - chanAt < 4000;
+  const state = view === "input" ? "in" : !fresh ? "old" : !chanTracks.has(t.num) ? "load" : f ? "ok" : "none";
+  const s = [view, t.num, t.name, t.color, state, cs === "bridge", f ? f.name + ":" + f.params.map(p => p.i + p.name).join(",") : ""].join("#");
+  if (s !== sig.ch) {
+    sig.ch = s; sig.chk = ""; gW = gH = 0;
+    box.innerHTML = chHeadHTML(t, f, view) + `<div class="ch-b">${chPanelHTML(t, f, view, cs)}</div>` + rpHTML(t);
+  }
+  updateStrip(box.querySelector(".rp .st"), t, { noSel: true });
+  const ctx = view + "#" + t.num;   // trocou de canal ou de tela: números de pico começam de novo
+  if (ctx !== pkCtx) { pkCtx = ctx; for (const k in pkHold) delete pkHold[k]; }
+  if (view === "input") {
+    box.querySelectorAll("[data-phase]").forEach(ph => { if (!held("ph" + t.num)) ph.classList.toggle("lit", !!phase[t.num]); });
+    syncCtl(box.querySelector('.hsl[data-k="pan"]'), (t.pan + 1) / 2);
+    syncCtl(box.querySelector('.hsl[data-k="width"]'), ((isFinite(t.width) ? t.width : 1) + 1) / 2);
+    const L = chainLevels(t);   // entrada do canal: o som seco, antes dos plugins
+    setLvl(box.querySelector("#bigm"), L ? L.lv[0] : null, L ? L.lvx[0] : null);
+    setPk(box, "bigm", L ? L.lvx[0] : null);
+    return;
+  }
+  if (view === "eq") {   // OUT = saída do EQ; sem EQ, a saída do canal (antes do fader)
+    if (f) { syncEnable(box, f); syncParams(box, f); }
+    const L = f ? null : chainLevels(t), lv = f ? fxLevels(t, f) : { out: L ? L.lv[L.lv.length - 1] : null, outx: L ? L.lvx[L.lvx.length - 1] : null };
+    setLvl(box.querySelector("#outm"), lv.out, lv.outx);
+    setPk(box, "outm", lv.outx);
+    drawEq(box, t, f);
+    return;
+  }
+  if (!f) return;
+  syncEnable(box, f);
+  syncParams(box, f);
+  const lv = fxLevels(t, f);
+  setLvl(box.querySelector("#inm"), lv.inp, lv.inpx);
+  setLvl(box.querySelector("#outm"), lv.out, lv.outx);
+  setGr(box.querySelector("#grm"), lv.gr);
+  setPk(box, "inm", lv.inpx); setPk(box, "outm", lv.outx); setPk(box, "grm", lv.gr, true);
+  const thrP = pFind(f, /^thresh/i), thr = thrP ? numOf(thrP.fmt) : NaN, inm = box.querySelector("#inm");
+  if (inm) { inm.querySelector(".thm")?.classList.toggle("none", !isFinite(thr)); inm.style.setProperty("--t", tfPos(thr).toFixed(4)); }
+  const svg = box.querySelector("#chsvg");
+  if (!svg) return;
+  const r = svg.getBoundingClientRect(), W = Math.round(r.width), H = Math.round(r.height);
+  if (!W || !H) return;
+  if (W !== gW || H !== gH) {
+    gW = W; gH = H;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.innerHTML = dynGridSVG(W, H) + `<path class="fill"/><path class="ln"/><circle class="dot" r="6"/>`;
+  }
+  const g = dynGraph(view, f, W, H);
+  svg.querySelector(".fill").setAttribute("d", g.fill);
+  svg.querySelector(".ln").setAttribute("d", g.line);
+  // bolinha no ponto de trabalho: nível que entra no plugin agora
+  const dot = svg.querySelector(".dot"), on = lv.inp !== null && lv.inp > -60;
+  dot.style.display = on ? "" : "none";
+  if (on) { const x = clamp(lv.inp, -60, 18); dot.setAttribute("cx", g.X(x).toFixed(1)); dot.setAttribute("cy", g.Y(clamp(g.c.out(x), -60, 18)).toFixed(1)); }
+}
+
+// ---------- SEND TO (envios do canal escolhido pros efeitos) ----------
+function renderSend() {
+  const box = $("#v-send"), t = selTrack();
+  if (!t) { box.innerHTML = `<div class="chmsg">Esperando a 01V96…</div>`; sig.send = ""; return; }
+  const list = fxSendsOf(t);
+  const s = [t.num, t.name, t.color, list.map(x => x.y + "." + x.other + x.dst.name + x.dst.color).join(","), innerWidth < 600].join("#");
+  if (s !== sig.send) {
+    sig.send = s;
+    box.innerHTML = rpHTML(t) + `<div class="sends">${list.length ? list.map(x => {
+      const c = tcolor(x.dst.color).c;
+      return stripHTML(t, { send: x, plate: c, plateName: { cn: "FX", nn: x.dst.name }, blankProc: true, row: x.dst.num, noSel: true });
+    }).join("") : `<div class="empty2">${esc(nameInfo(t).cn)} ${esc(nameInfo(t).nn)} não tem envio pros efeitos.</div>`}</div>`;
+  }
+  updateStrip(box.querySelector(".rp .st"), t, { noSel: true });
+  for (const x of list) updateStrip(box.querySelector(`.sends .st[data-row="${x.dst.num}"]`), t, { send: x, noSel: true });
+}
+
+// ---------- FX: réplica do painel do Valhalla Supermassive ----------
+function pkHTML(key, label, extra = "") {
+  return `<div class="ctl pk" data-k="param" data-axis="y" data-key="${key}" ${extra}>
+    <svg viewBox="0 0 64 64" aria-hidden="true"><path class="pt" d="${ARC}" pathLength="100"/><path class="pv" d="${ARC}" pathLength="100"/><circle class="pf" cx="32" cy="32" r="19"/><line class="pp" x1="32" y1="32" x2="32" y2="17"/></svg>
+    <div class="pl">${esc(label)}</div><div class="pf2" data-fmt="${key}"></div></div>`;
+}
+function typesHTML(mode) {
+  const cur = Math.round(mode.v * (mode.opts.length - 1));
+  return `<div class="types"><div class="th">MODE<button data-closetypes="1">Fechar</button></div>
+    <div class="tg">${mode.opts.map((o, k) => `<button data-mode="${k}" class="${k === cur ? "sel" : ""}"><i></i>${esc(o)}</button>`).join("")}</div></div>`;
+}
+const SM_MAIN = [["Mix", "MIX"], ["Delay_Ms", "DELAY", 'data-dl="ms"'], ["DelayNote", "DELAY", 'data-dl="note"'], ["DelayWarp", "WARP"], ["Feedback", "FEEDBACK"], ["Density", "DENSITY"], ["Width", "WIDTH"]];
+const SM_SUB = [["LowCut", "LOW CUT"], ["HighCut", "HIGH CUT"], ["ModRate", "MOD RATE"], ["ModDepth", "MOD DEPTH"]];
+function smPanelHTML(f) {
+  const mode = pByName(f, "Mode"), sync = pByName(f, "DelaySync");
+  const knob = ([n, label, extra]) => { const p = pByName(f, n); return p ? pkHTML(fmtKey(f, p), label, (p.opts ? `data-n="${p.opts.length}" ` : "") + (extra || "")) : ""; };
+  return `<div class="vsm"><div class="vtop"><div class="vlogo"><b>VALHALLA</b> SUPERMASSIVE</div>
+      ${mode ? (mode.opts ? `<button class="vmode etype"><span>MODE</span><b data-modefmt="1">${esc(mode.fmt)}</b><svg viewBox="0 0 12 8"><path d="M1 1.5l5 5 5-5"/></svg></button>` : `<div class="vmode"><span>MODE</span><b data-modefmt="1">${esc(mode.fmt)}</b></div>`) : ""}
+      <div class="vright">${sync ? `<button class="vbtn" data-sync="${f.t}.${f.f}"><span>SYNC</span><b data-syncfmt="1">${esc(sync.fmt)}</b></button>` : ""}<button class="vbtn" data-bypass="${f.t}.${f.f}">BYPASS</button></div></div>
+    <div class="vrow main">${SM_MAIN.map(knob).join("")}</div>
+    <div class="vrow sub">${SM_SUB.map(knob).join("")}${mode && !mode.opts ? pkHTML(fmtKey(f, mode), "MODE") : ""}</div>
+    ${ui.types && mode && mode.opts ? typesHTML(mode) : ""}</div>`;
+}
+function genericPanelHTML(f) {
+  const ps = f.params.filter(p => !/^(reserved|bypass|delta)/i.test(p.name)).slice(0, 24);
+  return `<div class="vgen"><div class="vtop"><div class="vlogo"><b>${esc(fxShort(f.name))}</b></div><div class="vright"><button class="vbtn" data-bypass="${f.t}.${f.f}">BYPASS</button></div></div>
+    <div class="vrow">${ps.map(p => pkHTML(fmtKey(f, p), p.name.toUpperCase(), p.opts ? `data-n="${p.opts.length}"` : "")).join("")}</div></div>`;
+}
+function renderFx(cs) {
+  const box = $("#v-fx"), buses = fxBuses();
+  if (!buses.some(b => String(b.num) === ui.fxBus) && buses.length) ui.fxBus = String(buses[0].num);
+  const bus = trackByNum(+ui.fxBus), f = curFx();
+  const s = [ui.fxBus, buses.map(b => b.num + b.name + b.color).join(","), ui.types, cs === "bridge", f ? f.name + ":" + f.params.map(p => p.i + p.name + (p.opts ? p.opts.length : "")).join(",") : "none"].join("#");
+  if (s !== sig.fx) {
+    sig.fx = s;
+    if (!bus) { box.innerHTML = `<div class="chmsg">Nenhum bus de efeito (ROOM, VERB, DELAY…) no projeto.</div>`; return; }
+    box.innerHTML = `<div class="ch-h"><div class="bust">${buses.map(b => `<button data-fxbus="${b.num}" class="${String(b.num) === ui.fxBus ? "lit" : ""}" style="--tc:${tcolor(b.color).c}"><i></i>${esc(b.name)}</button>`).join("")}</div></div>
+      <div class="ch-b"><div class="fxw"><div class="fxsc">${f ? (isSM(f) ? smPanelHTML(f) : genericPanelHTML(f)) : `<div class="chmsg">${cs === "bridge" ? "A ponte dos plugins não está respondendo." : "Os efeitos internos da 01V96 ainda não aparecem aqui. O fader ao lado é o master deste AUX."}</div>`}</div></div></div>
+      ${rpHTML(bus)}`;
+  }
+  if (!bus) return;
+  updateStrip(box.querySelector(".rp .st"), bus, { noSel: true });
+  if (!f) return;
+  syncEnable(box, f);
+  const sync = pByName(f, "DelaySync"), mode = pByName(f, "Mode");
+  const sf = box.querySelector("[data-syncfmt]"); if (sf && sync && sf.textContent !== sync.fmt) sf.textContent = sync.fmt;
+  const mf = box.querySelector("[data-modefmt]"); if (mf && mode && mf.textContent !== mode.fmt) mf.textContent = mode.fmt;
+  syncParams(box, f);
+  if (isSM(f)) {
+    const ms = !sync || /^(ms|msec|free)/i.test(sync.fmt);
+    const a = box.querySelector('[data-dl="ms"]'), b = box.querySelector('[data-dl="note"]');
+    if (a && b) { a.classList.toggle("hidden", !ms); b.classList.toggle("hidden", ms); }
+  }
+}
+function openSyncPop(btn) {
+  const f = curFx(), p = f && pByName(f, "DelaySync"); if (!p) return;
+  const key = fmtKey(f, p);
+  if (p.opts) {
+    const cur = Math.round(p.v * (p.opts.length - 1));
+    openPop(`<div class="listpop">${p.opts.map((o, k) => `<button data-opt="${k}" data-key="${key}" data-n="${p.opts.length}" class="${k === cur ? "sel" : ""}">${esc(o)}</button>`).join("")}</div>`, btn);
+  } else sendFx(key, `${key}=${/^(ms|msec)/i.test(p.fmt) ? "0.50000" : "0.25000"}`);   // ponte antiga: alterna ms/nota
+}
+
+pollLoop();
+slowLoop();
+setInterval(() => { if (!busy) render(); }, 1000);
+</script>
+</body>
+</html>
